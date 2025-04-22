@@ -1,3 +1,4 @@
+name: ovosmisc
 services:
   beszel-agent:
     image: henrygd/beszel-agent
@@ -21,3 +22,11 @@ services:
     restart: always
     ports:
       - 9001:9001
+  ovos_config:
+    container_name: ovos_config
+    image: ghcr.io/oscillatelabsllc/ovos-skill-config-tool:latest
+    ports:
+      - 14152:8000
+    user: $(id -u):$(id -g)
+    volumes:
+      - $HOME/.config:/home/appuser/.config
