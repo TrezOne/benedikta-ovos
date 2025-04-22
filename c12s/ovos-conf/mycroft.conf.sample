@@ -42,11 +42,21 @@
   // Date format, either 'MDY' (e.g. "11-29-1978") or 'DMY' (e.g. "29-11-1978")
   "date_format": "MDY",
 
-  // Whether to opt in to data collection
-  "opt_in": false,
-
   // Play a beep when system begins to listen?
   "confirm_listening": true,
+
+  // opendata servers can be hosted by users or OVOS team, either for analyzing your usage patterns or to contribute to a open dataset
+  // any number of server urls can be added here, this is EXCLUSIVELY OPT-IN
+  // source: https://github.com/OpenVoiceOS/ovos-opendata-server
+  "open_data": {
+    // NOTE: consider enabling tigregotico.pt servers to help collecting datasets!
+    // this is a server hosted by @JarbasAi and will directly help improving the intent pipeline
+    // a dashboard is provided at https://opendata.tigregotico.pt
+    // more test data is needed to complement https://gitlocalize-bench.tigregotico.pt and to identity areas of improvement
+    "intent_urls": [
+       // "https://metrics.tigregotico.pt/intents"
+    ]
+  },
 
   // File locations of sounds to play for system events
   "sounds": {
@@ -105,20 +115,6 @@
   // default to $XDG_DATA_DIRS/$BASE_FOLDER where BASE_FOLDER is read from ovos.conf (default "mycroft")
   // "cache_path": "/tmp/mycroft/cache",
 
-  # emit mycroft.ready signal when all these conditions are met
-  # different setups will have different needs
-  # eg, a server does not care about audio
-  # pairing -> device is paired
-  # internet -> device is connected to the internet - NOT IMPLEMENTED
-  # skills -> skills reported ready
-  # speech -> stt reported ready
-  # audio -> audio playback reported ready
-  # gui -> gui websocket reported ready - NOT IMPLEMENTED
-  # enclosure -> enclosure/HAL reported ready - NOT IMPLEMENTED
-  # network_skills -> skills with network requirements
-  # internet_skills -> skills with internet requirements
-  "ready_settings": ["skills"],
-
   // To enable a utterance transformer plugin just add it's name with any relevant config
   // these plugins can mutate the utterance between STT and the Intent stage
   // they may also modify message.context with metadata
@@ -158,6 +154,19 @@
       "conf_med": 0.8,
       "conf_low": 0.5,
 
+      // use snowball stemmer, helps with grammatical gender and verb tenses
+      "stem": false,
+
+      // normalization step to remove punctuation and punctuation
+      "cast_to_ascii": false,
+
+      // padaos is an internal regex matcher that ensures exact matches
+      "disable_padaos": false,
+
+      // domain engine will classify intents first and then the intent for that skill
+      // if false intents are classified directly
+      "domain_engine": false,
+      
       // path to save trained intent files
       // by default uses XDG directories if not set
       //"intent_cache": "~/.local/share/mycroft/intent_cache/",
@@ -217,7 +226,6 @@
         "fallback_high",
         "stop_medium",
         "adapt_medium",
-        "padatious_medium",
         "adapt_low",
         "common_qa",
         "fallback_medium",
@@ -230,25 +238,6 @@
 
     // relative to "data_dir"
     "directory": "skills",
-
-    // used by selene for marketplace integration in web interface
-    // NOTE: selene seems to work fine without this data
-    // no need to advertise installed skills if they dont have settings
-    // this data was tightly coupled to msm and is now mostly useless for selene
-    "upload_skill_manifest": false,
-
-    // if "sync_skill_settings" is enabled in "server" section
-    // should skill settingg changes on device be upload to selene?
-    // NOTE: this should be true, but it was removed (bug ?) in selene at some point
-    // old endpoints are however still available so functionality has been restored here
-    // it is only configurable in case you want to retain "old" mycroft-core behaviour
-    // or in case selene deprecates the old endpoint
-    "sync2way": true,
-    // values in skill settings missing in settingsmeta wont show up in selene
-    // this flag auto generates settingsmeta on the fly
-    // TODO - settings this to true may run into permission issues until settingsmeta.json gets XDG support
-    // it writes to skill base folder
-    "autogen_meta": false,
 
     // blacklisted skills to not load
     // NB: This is skill_id of the skill, usually defined in the skills setup.py
@@ -340,76 +329,18 @@
     // eg. {"a": {"b": True, "c": False}}
     // to protect "c" you would enter "a:c" in the section below
     "protected_keys": {
-        // NOTE: selene backend expects "opt_in" to be changeable in their web ui
-        // that effectively gives them a means to enable spying without your input
-        // Mycroft AI can be trusted, but you dont need to anymore!
-        // The other keys are not currently populated by the remote backend
-        // they are defined for protection against bugs and for future proofing
-        // (what if facebook buys mycroft tomorrow?)
         "remote": [
-            "enclosure",
-            "server",
             "system",
             "websocket",
             "gui_websocket",
             "network_tests",
-            "listener:wake_word_upload:disable",
             // NOTE: selene returns listener settings as part of ww config
             // they are protected because selene has no clue about your mic setup
             "listener:channels",
-            "listener:sample_rate",
-            "listener:multiplier",
-            "listener:energy_ratio",
-            "skills:upload_skill_manifest",
-            "skills:auto_update",
-            "skills:priority_skills",
-            "skills:blacklisted_skills",
-            // NOTE: selene exposes this in web_ui, this has been disabled
-            // if you unprotect this key selene can enable opt_in behind your back
-            "opt_in"
+            "listener:sample_rate"
         ],
         "user": []
     }
-  },
-
-  // Address of the REMOTE server
-  // Needs to be explicitly enabled, also see "protected_keys" under "system" above
-  // Possible backends
-  // - https://github.com/OpenVoiceOS/OVOS-local-backend
-  "server": {
-    // Valid types: offline, personal
-    "backend_type": "offline",
-    // url for self hosted personal backend
-    "url": "",
-    "version": "v1",
-    "update": false,
-    "metrics": true,
-    "sync_skill_settings": true
-  },
-
-  // This section controls what providers should be used by each 3rd party API
-  "microservices": {
-      // auto == backend from "server" section above
-      // auto / wolfram / personal
-      "wolfram_provider": "auto",
-      // auto / owm / personal
-      "weather_provider": "auto",
-      // auto / osm / personal
-      "geolocation_provider": "auto",
-
-      // secret keys for offline usage
-      "wolfram_key": "",
-      "owm_key": "",
-      "email": {
-          // by default send emails here
-          "recipient": "",
-          "smtp": {
-            "username": "",
-            "password": "",
-            "host": "smtp.mailprovider.com",
-            "port": 465
-          }
-      }
   },
 
   // The ovos-core messagebus websocket
@@ -450,7 +381,7 @@
     "sample_rate": 16000,
 
     // mute global audio output volume while microphone is recording
-    "fake_barge_in": false,
+    "fake_barge_in": true,
 
     // TODO - these names are confusing, update dinkum listener to give them more descriptive names
     // min speech seconds for audio to be considered speech
@@ -484,7 +415,7 @@
     // "{uuid4}" - a random uuid4
     // "{now:%Y-%m-%dT%H%M%S%z}" - the local ISO datetime
     // "{utcnow:%Y-%m-%dT%H%M%S%z}" - the UTC ISO datetime
-    "utterance_filename": "{hash}-{uuid4}",
+    "utterance_filename": "{md5}-{uuid4}",
 
     "wake_word_upload": {
       "disable": true,
@@ -669,7 +600,13 @@
     "generic": {
         // enable/disable homescreen
         "homescreen_supported": true
-    }
+    },
+
+    // in headless devices you can set this flag to not emit any GUI related bus messages
+    // this will reduce messagebus usage
+    // NOTE: this may be undesired, GUI clients can also be cli based and
+    // do not necessarily require a desktop environment or to be running 24/7
+    "disable_gui": false
   },
 
   // Level of logs to store, one of  "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"
@@ -749,9 +686,9 @@
      "module": "ovos-classifiers-postag-plugin"
   },
   // turn utterances into phoneme sequences, used to generate mouth movements
+  //  disabled by default, only relevant in devices such as the Mark 1
   "g2p": {
-     "module": "ovos-g2p-plugin-mimic",
-     "ovos-g2p-plugin-mimic": {"fallback_module": "ovos-g2p-plugin-heuristic-arpa"}
+     "module": ""
   },
 
   // DEPRECATED: this section is in the process of being fully removed,
