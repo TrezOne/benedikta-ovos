@@ -1,0 +1,10 @@
+{
+    "__mycroft_skill_firstrun": false,
+    "enable_gui": false,
+    "geonames_user": "jarbas",
+    "map_style": "ortho",
+    "center_iss": true,
+    "center_location": false,
+    "iss_size": 0.5,
+    "dpi": 500
+}
