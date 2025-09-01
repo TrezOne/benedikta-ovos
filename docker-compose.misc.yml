@@ -1,20 +1,121 @@
 name: ovosmisc
+
+x-watchtower-monitor: &watchtower-monitor
+  labels:
+    com.centurylinklabs.watchtower.monitor-only: true
 services:
   beszel-agent:
-    image: henrygd/beszel-agent
     container_name: beszel-agent
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # monitor other disks / partitions by mounting a folder in /extra-filesystems
-      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
       LISTEN: 45876
-      KEY: ${BEZEL_AGENT_KEY}
+      KEY: '${BESZEL_RIKKU_AGENT_KEY}'
+      TOKEN: ${BESZEL_BENEDIKTA_TOKEN}
+      HUB_URL: http://192.168.1.254:22220
+    expose:
+      - 45876
+    image: henrygd/beszel-agent
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - beszel-agent-data:/var/lib/beszel-agent
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/mmcblk0:/extra-filesystems/dev/mmcblk0:ro
+  docker-socket-proxy:
+    container_name: dockerproxy
+    environment:
+      AUTH: 0
+      BUILD: 0
+      COMMIT: 0
+      CONFIGS: 0
+      CONTAINERS: 1
+      DISTRIBUTION: 0
+      EVENTS: 0
+      EXEC: 0
+      GPRC: 0
+      IMAGES: 1
+      INFO: 1
+      NETWORKS: 1
+      NODES: 0
+      POST: 0
+      PLUGINS: 0
+      SERVICES: 0
+      SESSION: 0
+      SYSTEM: 0
+      TASKS: 0
+      VOLUMES: 0
+      LOG_LEVEL: debug
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    ports:
+      - 2375:2375
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  ovos_audio:
+    <<: *watchtower-monitor
+  ovos_cli:
+    <<: *watchtower-monitor
+  ovos_core:
+    <<: *watchtower-monitor
+  ovos_listener:
+    <<: *watchtower-monitor
+  ovos_messagebus:
+    <<: *watchtower-monitor
+  ovos_phal:
+    <<: *watchtower-monitor
+  ovos_phal_admin:
+    <<: *watchtower-monitor
+  ovos_plugin_ggwave:
+    <<: *watchtower-monitor
+  ovos_skill_alerts:
+    <<: *watchtower-monitor
+  ovos_skill_camera:
+    <<: *watchtower-monitor
+  ovos_skill_date_time:
+    <<: *watchtower-monitor
+  ovos_skill_duckduckgo:
+    <<: *watchtower-monitor
+  ovos_skill_easter_eggs:
+    <<: *watchtower-monitor
+  ovos_skill_fallback_unknown:
+    <<: *watchtower-monitor
+  ovos_skill_ggwave:
+    <<: *watchtower-monitor
+  ovos_skill_hello_world:
+    <<: *watchtower-monitor
+  ovos_skill_jokes:
+    <<: *watchtower-monitor
+  ovos_skill_parrot:
+    <<: *watchtower-monitor
+  ovos_skill_personal:
+    <<: *watchtower-monitor
+  ovos_skill_randomness:
+    <<: *watchtower-monitor
+  ovos_skill_volume:
+    <<: *watchtower-monitor
+  ovos_skill_weather:
+    <<: *watchtower-monitor
+  ovos_skill_wikihow:
+    <<: *watchtower-monitor
+  ovos_skill_wikipedia:
+    <<: *watchtower-monitor
+  ovos_skill_wolfie:
+    <<: *watchtower-monitor
+  ovos_skill_wordnet:
+    <<: *watchtower-monitor
+  signoz-logspout:
+    command: signoz://192.168.1.254:8082
+    container_name: signoz-logspout
+    environment:
+      ENV: prod
+      SIGNOZ_LOG_ENDPOINT: http://192.168.1.254:8082
+    image: pavanputhra/logspout-signoz
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   portainer-agent:
     container_name: portainer_agent
-    image: portainer/agent:2.27.0
+    image: portainer/agent:latest
     volumes:
       - /:/host
       - /var/lib/docker/volumes:/var/lib/docker/volumes
@@ -22,11 +123,34 @@ services:
     restart: always
     ports:
       - 9001:9001
-  ovos_config:
-    container_name: ovos_config
-    image: ghcr.io/oscillatelabsllc/ovos-skill-config-tool:latest
-    ports:
-      - 14152:8000
-    user: $(id -u):$(id -g)
+  watchtower:
+    container_name: watchtower
+    environment:
+      REPO_PASS:
+      REPO_USER:
+      TZ: ${TZ}
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_INCLUDE_STOPPED: false
+      WATCHTOWER_MONITOR_ONLY: false
+      WATCHTOWER_NOTIFICATIONS: gotify
+      WATCHTOWER_NOTIFICATIONS_LEVEL: info
+      WATCHTOWER_NOTIFICATION_TEMPLATE: '{{range .}}{{.Message}}{{println}}{{end}}'
+      WATCHTOWER_NOTIFICATION_URL:
+      WATCHTOWER_SCHEDULE: 0 0 4 * * *
+      WATCHTOWER_TIMEOUT: 30s
+      WATCHTOWER_HTTP_API_METRICS: true
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_HTTP_API_TOKEN}
+      WATCHTOWER_NOTIFICATION_GOTIFY_URL: ${WATCHTOWER_NOTIFICATION_GOTIFY_URL}
+      WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN: ${WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN}
+      WATCHTOWER_NOTIFICATION_GOTIFY_TLS_SKIP_VERIFY: true
+    expose:
+      - 8080
+    hostname: Rikku
+    image: ghcr.io/containrrr/watchtower:latest
+    restart: unless-stopped
     volumes:
-      - $HOME/.config:/home/appuser/.config
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+volumes:
+  beszel-agent-data:
+    name: beszel-agent-data
