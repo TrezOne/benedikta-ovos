@@ -1,0 +1,87 @@
+---
+x-podman: &podman
+  userns_mode: keep-id
+  security_opt:
+    - "label=disable"
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    mode: non-blocking
+    max-buffer-size: 4m
+    max-size: "200m"
+    max-file: "1"
+
+x-common-environment: &common-environment
+  TZ: ${TZ:-UTC}
+
+x-skill-resource-limits: &skill-resource-limits
+  deploy:
+    resources:
+      limits:
+        memory: 256M
+      reservations:
+        memory: 64M
+
+x-skill-base: &skill-base
+  <<: [*podman, *skill-resource-limits]
+  restart: unless-stopped
+  logging: *default-logging
+  pull_policy: ${PULL_POLICY:-always}
+  environment:
+    <<: *common-environment
+  network_mode: host
+  volumes:
+    - ${OVOS_CONFIG_FOLDER}:/home/${OVOS_USER}/.config/mycroft
+    - ${TMP_FOLDER}:/tmp/mycroft
+  depends_on:
+    ovos_core:
+      condition: service_started
+
+volumes:
+  ovos_nltk:
+    name: ovos_nltk
+    driver: local
+
+services:
+  ovos_skill_wolfie:
+    <<: *skill-base
+    container_name: ovos_skill_wolfie
+    hostname: ovos_skill_wolfie
+    image: docker.io/smartgic/ovos-skill-wolfie:${VERSION}
+
+  ovos_skill_jokes:
+    <<: *skill-base
+    container_name: ovos_skill_jokes
+    hostname: ovos_skill_jokes
+    image: docker.io/smartgic/ovos-skill-jokes:${VERSION}
+
+  ovos_skill_easter_eggs:
+    <<: *skill-base
+    container_name: ovos_skill_easter_eggs
+    hostname: ovos_skill_easter_eggs
+    image: docker.io/smartgic/ovos-skill-easter-eggs:${VERSION}
+
+  ovos_skill_parrot:
+    <<: *skill-base
+    container_name: ovos_skill_parrot
+    hostname: ovos_skill_parrot
+    image: docker.io/smartgic/ovos-skill-parrot:${VERSION}
+
+  ovos_skill_randomness:
+    <<: *skill-base
+    container_name: ovos_skill_randomness
+    hostname: ovos_skill_randomness
+    image: docker.io/smartgic/ovos-skill-randomness:${VERSION}
+
+  ovos_skill_camera:
+    <<: *skill-base
+    container_name: ovos_skill_camera
+    hostname: ovos_skill_camera
+    image: docker.io/smartgic/ovos-skill-camera:${VERSION}
+
+  ovos_skill_wikihow:
+    <<: *skill-base
+    container_name: ovos_skill_wikihow
+    hostname: ovos_skill_wikihow
+    image: docker.io/smartgic/ovos-skill-wikihow:${VERSION}
