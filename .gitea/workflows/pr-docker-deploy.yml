@@ -220,13 +220,13 @@ jobs:
             -a ! -name "*macos*" \
             -a ! -name "*hivemind*" \
             -a ! -name "*server*" \
-            | sed -e ':a;N;$!ba;s/[\r\n]/ -f /g')
+            | sed -e ':a;N;$!ba;s/[\r\n]/ /g')
 
           echo "compose_list=$compose_list" >> "$GITHUB_OUTPUT"
           echo "Compose files: $compose_list"
 
       - name: Docker Compose Dry Run
-        uses: cssnr/stack-deploy-action@v1.3.2
+        uses: cssnr/stack-deploy-action@files
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
