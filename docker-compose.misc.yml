@@ -103,16 +103,6 @@ services:
     <<: *watchtower-monitor
   ovos_skill_wordnet:
     <<: *watchtower-monitor
-  signoz-logspout:
-    command: signoz://192.168.1.254:8082
-    container_name: signoz-logspout
-    environment:
-      ENV: prod
-      SIGNOZ_LOG_ENDPOINT: http://192.168.1.254:8082
-    image: pavanputhra/logspout-signoz
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest
@@ -123,6 +113,16 @@ services:
     restart: always
     ports:
       - 9001:9001
+  signoz-logspout:
+    command: signoz://192.168.1.254:8082
+    container_name: signoz-logspout
+    environment:
+      ENV: prod
+      SIGNOZ_LOG_ENDPOINT: http://192.168.1.254:8082
+    image: pavanputhra/logspout-signoz
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   watchtower:
     container_name: watchtower
     environment:
@@ -145,7 +145,7 @@ services:
       WATCHTOWER_NOTIFICATION_GOTIFY_TLS_SKIP_VERIFY: true
     expose:
       - 8080
-    hostname: Rikku
+    hostname: Benedikta
     image: ghcr.io/containrrr/watchtower:latest
     restart: unless-stopped
     volumes:
