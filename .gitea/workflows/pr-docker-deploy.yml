@@ -1,0 +1,235 @@
+name: Gitea Branch PR & Docker Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - 'main'
+    paths:
+      - 'docker-compose.misc.yml'
+      - 'compose/docker-compose*.yml'
+      - 'compose/.env*'
+
+env:
+  HC_VAULT_VERSION: '1.20.0'
+  TEA_VERSION: '0.10.1'
+
+jobs:
+  check-and-create-pr:
+    if: github.ref != 'refs/heads/main'
+    name: Check and Create PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Cache tea CLI
+        id: cache-tea
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/tea/${{ env.TEA_VERSION }}/x64
+          key: tea-${{ runner.os }}-${{ env.TEA_VERSION }}
+
+      - name: Install tea
+        uses: supplypike/setup-bin@v4
+        with:
+          uri: https://gitea.com/gitea/tea/releases/download/v${{ env.TEA_VERSION }}/tea-${{ env.TEA_VERSION }}-linux-amd64
+          name: tea
+          version: ${{ env.TEA_VERSION }}
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Check'
+          notification_message: 'Checking for existing PR... 🔍'
+
+      - name: Check if open PR exists
+        id: check-opened-pr-step
+        continue-on-error: true
+        run: |
+          tea login add --name gitea-rinoa --url "${{ secrets.RINOA_GITEA_URL }}" --user gitea-sonarqube-bot --password "${{ secrets.BOT_GITEA_PASSWORD }}" --token ${{ secrets.BOT_GITEA_TOKEN }}
+          pr_exists=$(tea pr list --repo ${{ github.repository }} --state open --fields index,title,head | egrep '\[DOCKER\].*${{ github.ref_name }}' | tail -1 | wc -l)
+          echo "exists=$pr_exists" >> $GITHUB_OUTPUT
+
+      - name: Create PR
+        if: ${{ steps.check-opened-pr-step.outputs.exists == '0' }}
+        run: |
+          tea login default gitea-rinoa
+          pr_index_old=$(tea pr ls --repo ${{ github.repository }} --state all --fields index,title,head --output csv | sed -e 's|"||g' | egrep '^[0-9]' | head -1 | awk -F"," '{print $1}')
+          pr_index_new=$(expr ${pr_index_old} + 1)
+          tea pr c -r ${{ github.repository }} -t "[DOCKER] Automated PR for ${{ github.ref_name }} - #${pr_index_new}" -d "Automatically created PR for branch: ${{ github.ref_name }}" -a ${{ github.actor }} -L "Docker Compose"
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Check'
+          notification_message: 'PR Created 🎟️'
+
+  generate-service-list:
+    name: Generate list of added/modified/deleted services
+    runs-on: ubuntu-latest
+    needs: [check-and-create-pr]
+    outputs:
+      svc_deploy_list: ${{ steps.detect_services.outputs.docker_svc_list }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch base branch
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RINOA_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RINOA_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Services TBD'
+          notification_message: 'Generating list of services to deploy...'
+
+      - name: Detect added, deleted, and modified services
+        id: detect_services
+        run: |
+          echo "Getting services from main and ${{ github.ref_name }}"
+
+          # Dynamically find all docker-compose YAML files (root + compose folder)
+          COMPOSE_FILES=($(find . -maxdepth 2 -type f -name 'docker-compose*.yml' | sort))
+
+          echo "Found Compose files:"
+          printf '%s\n' "${COMPOSE_FILES[@]}"
+
+          # Temp files to store all services
+          touch services_main_all.txt services_head_all.txt
+
+          for f in "${COMPOSE_FILES[@]}"; do
+            echo "Processing $f"
+
+            # Fetch main version
+            git show origin/main:"$f" > "main_$f" 2>/dev/null || touch "main_$f"
+            cp "$f" "head_$f"
+
+            # Extract services and append to global list
+            yq '.services | keys | .[]' "main_$f" >> services_main_all.txt 2>/dev/null || true
+            yq '.services | keys | .[]' "head_$f" >> services_head_all.txt 2>/dev/null || true
+          done
+
+          # Sort and deduplicate
+          sort -u services_main_all.txt -o services_main_all.txt
+          sort -u services_head_all.txt -o services_head_all.txt
+
+          echo "Creating list of modified services..."
+          touch service_changes.txt
+
+          # Added services
+          comm -13 services_main_all.txt services_head_all.txt | while read service; do
+            echo "$service: added" >> service_changes.txt
+          done
+
+          # Modified services (parallelized)
+          comm -12 services_main_all.txt services_head_all.txt | xargs -n1 -P4 -I{} bash -c '
+            service="{}"
+            modified=0
+            for f in "${COMPOSE_FILES[@]}"; do
+              yq ".services[\"$service\"]" "main_$f" > tmp_main.yml 2>/dev/null || continue
+              yq ".services[\"$service\"]" "head_$f" > tmp_head.yml 2>/dev/null || continue
+              if ! diff -q tmp_main.yml tmp_head.yml > /dev/null; then
+                modified=1
+                break
+              fi
+            done
+            if [[ $modified -eq 1 ]]; then
+              echo "$service: modified" >> service_changes.txt
+            fi
+          '
+
+          echo "Detected service changes:"
+          cat service_changes.txt
+
+          mod_svcs=$(cut -d':' -f1 service_changes.txt | sort | uniq)
+          echo "docker_svc_list<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$mod_svcs" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: List of Services for (Re)Deployment
+        run: |
+          echo -e "${{ steps.detect_services.outputs.docker_svc_list }}"
+
+  docker-compose-dry-run:
+    name: Docker Compose Dry Run
+    needs: [generate-service-list]
+    runs-on: ubuntu-latest
+    env:
+      VAULT_ADDR: ${{ secrets.RIKKU_VAULT_ADDR }}
+      VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
+      VAULT_NAMESPACE: ""
+      RIKKU_REGISTRY_PASSWORD: ${{ secrets.BOT_GITEA_PASSWORD }}
+      DOCKER_SVC_LIST: ${{ needs.generate-service-list.outputs.svc_deploy_list }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Gitea Container Registry
+        run: |
+          docker login -u gitea-sonarqube-bot -p ${RIKKU_REGISTRY_PASSWORD} git.trez.wtf
+
+      - name: Cache Vault install
+        id: cache-vault
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/vault/${{ env.HC_VAULT_VERSION }}/x64
+          key: vault-${{ runner.os }}-${{ env.HC_VAULT_VERSION }}
+
+      - name: Install Vault (only if not cached)
+        if: steps.cache-vault.outputs.cache-hit != 'true'
+        uses: cpanato/vault-installer@main
+        with:
+          version: ${{ env.HC_VAULT_VERSION }}
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RIKKU_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RIKKU_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Docker Compose Dry Run @ Rikku'
+          notification_message: 'Starting Docker Compose dry run...'
+
+      - name: Generate .env file for Docker Compose
+        run: |
+          vault kv get -format=json benedikta-docker/env | jq -r '.data.data' | jq -r 'keys[] as $k | "\($k)='\''\(.[$k])'\''"' > .env
+
+      - name: Get list of Compose files
+        run: |
+          compose_list=$(find . -type f -name "docker-compose*.yml" -a ! -name "*windows*" -a ! -name "*gui*" -a ! -name "*macos*" -a ! -name "*hivemind*" -a ! -name "*server*" | sed -e ':a;N;$!ba;s/[\r\n]/ -f /g')
+          echo "$compose_list" >> "$GITHUB_OUTPUT"
+
+      - name: Docker Compose Dry Run
+        uses: cssnr/stack-deploy-action@v1.3.2
+        with:
+          mode: compose
+          file: docker-compose.yml
+          name: 'rikku'
+          host: 192.168.1.252
+          user: pi
+          ssh_key: ${{ secrets.RIKKU_SSH_PRIVATE_KEY }}
+          args: --remove-orphans -d --dry-run ${{ needs.generate-service-list.outputs.svc_deploy_list }}
+          env_file: '.env'
+          registry_host: 'ghcr.io'
+          registry_user: TrezOne
+          registry_pass: ${{ secrets.GHCR_LOGIN_TOKEN }}
+          summary: true
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.RIKKU_GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RIKKU_RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Docker Compose Dry Run @ Rikku'
+          notification_message: 'Docker Compose dry run completed successfully.'
