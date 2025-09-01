@@ -204,7 +204,7 @@ jobs:
         with:
           gotify_api_base: '${{ secrets.GOTIFY_URL }}'
           gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
-          notification_title: 'GITEA: Docker Compose Dry Run @ Rikku'
+          notification_title: 'GITEA: Docker Compose Dry Run @ Benedikta'
           notification_message: 'Starting Docker Compose dry run...'
 
       - name: Generate .env file for Docker Compose
@@ -246,5 +246,116 @@ jobs:
         with:
           gotify_api_base: '${{ secrets.GOTIFY_URL }}'
           gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
-          notification_title: 'GITEA: Docker Compose Dry Run @ Rikku'
+          notification_title: 'GITEA: Docker Compose Dry Run @ Benedikta'
           notification_message: 'Docker Compose dry run completed successfully.'
+
+  pr-merge:
+    name: PR Merge
+    needs: [generate-service-list, docker-compose-dry-run]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache tea CLI
+        id: cache-tea
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/tea/${{ env.TEA_VERSION }}/x64
+          key: tea-${{ runner.os }}-${{ env.TEA_VERSION }}
+
+      - name: Install tea
+        uses: supplypike/setup-bin@v4
+        with:
+          uri: https://gitea.com/gitea/tea/releases/download/v${{ env.TEA_VERSION }}/tea-${{ env.TEA_VERSION }}-linux-amd64
+          name: tea
+          version: ${{ env.TEA_VERSION }}
+
+      - name: PR Merge
+        id: pr_merge
+        run: |
+          tea login add --name gitea-rinoa --url ${{ secrets.BDIKTA_GITEA_URL }} --user gitea-sonarqube-bot --password "${{ secrets.BOT_GITEA_PASSWORD }}" --token ${{ secrets.BOT_GITEA_TOKEN }}
+          tea login default gitea-rinoa
+          echo "Merging PR..."
+          pr_index=$(tea pr ls --repo ${{ github.repository }} --state open --fields index,title,head,state --output csv | egrep ${{ github.ref_name }} | awk -F"," '{print $1}' | sed -e 's|"||g')
+          tea pr m --repo ${{ github.repository }} --title "Auto Merge of PR ${pr_index} - ${{ github.ref_name }}" --message "Merged by ${{ github.actor }}" ${pr_index}
+          echo "pr_index=${pr_index}" >> $GITHUB_OUTPUT
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: PR Merge Successful'
+          notification_message: 'PR #${{ steps.pr_merge.outputs.pr_index }} merged.'
+
+  docker-compose-deploy:
+    name: Docker Compose Deployment
+    runs-on: ubuntu-latest
+    needs: [pr-merge]
+    env:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
+      REGISTRY_PASSWORD: ${{ secrets.BOT_GITEA_PASSWORD }}
+      DOCKER_SVC_LIST: ${{ needs.generate-service-list.outputs.svc_deploy_list }}
+      COMPOSE_FILE_LIST: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Cache Vault install
+        id: cache-vault
+        uses: actions/cache@v4
+        with:
+          path: /opt/hostedtoolcache/vault/${{ env.HC_VAULT_VERSION }}/x64
+          key: vault-${{ runner.os }}-${{ env.HC_VAULT_VERSION }}
+
+      - name: Install Vault (only if not cached)
+        if: steps.cache-vault.outputs.cache-hit != 'true'
+        uses: cpanato/vault-installer@main
+        with:
+          version: ${{ env.HC_VAULT_VERSION }}
+
+      - name: Login to Gitea Container Registry
+        run: |
+          docker login -u gitea-sonarqube-bot -p ${REGISTRY_PASSWORD} git.trez.wtf
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Docker Compose Deployment @ Benedikta'
+          notification_message: 'Starting Docker Compose run...'
+
+      - name: Generate .env file for deployment
+        run: |
+           vault kv get -format=json benedikta-docker/env | jq -r '.data.data' | jq -r 'keys[] as $k | "\($k)='\''\(.[$k])'\''"' > .env
+           echo ${DOCKER_SVC_LIST}
+           echo ${COMPOSE_FILE_LIST}
+
+      - name: Docker Compose Deployment
+        uses: cssnr/stack-deploy-action@v1.3.2
+        with:
+          mode: compose
+          file: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}
+          name: 'ovosmisc'
+          host: 192.168.1.250
+          user: ovos
+          ssh_key: ${{ secrets.BDIKTA_GITEA_PRIVATE_SSH_KEY }}
+          args: --remove-orphans -d ${{ needs.generate-service-list.outputs.svc_deploy_list }}
+          env_file: '.env'
+          # registry_host: 'ghcr.io'
+          # registry_user: TrezOne
+          # registry_pass: ${{ secrets.GHCR_LOGIN_TOKEN }}
+          summary: true
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: '${{ secrets.GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
+          notification_title: 'GITEA: Docker Compose Deployment @ Benedikta'
+          notification_message: 'Deployment completed successfully.'
