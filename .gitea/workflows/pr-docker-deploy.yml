@@ -214,9 +214,16 @@ jobs:
       - name: Get list of Compose files
         id: compose_file_list
         run: |
-          compose_list=$(find . -type f -name "docker-compose*.yml" -a ! -name "*windows*" -a ! -name "*gui*" -a ! -name "*macos*" -a ! -name "*hivemind*" -a ! -name "*server*" | sed -e ':a;N;$!ba;s/[\r\n]/ -f /g')
-          echo ${compose_list}
-          echo "$compose_list" >> "$GITHUB_OUTPUT"
+          compose_list=$(find . -type f -name "docker-compose*.yml" \
+            -a ! -name "*windows*" \
+            -a ! -name "*gui*" \
+            -a ! -name "*macos*" \
+            -a ! -name "*hivemind*" \
+            -a ! -name "*server*" \
+            | sed -e ':a;N;$!ba;s/[\r\n]/ -f /g')
+
+          echo "compose_list=$compose_list" >> "$GITHUB_OUTPUT"
+          echo "Compose files: $compose_list"
 
       - name: Docker Compose Dry Run
         uses: cssnr/stack-deploy-action@v1.3.2
