@@ -215,6 +215,7 @@ jobs:
         id: compose_file_list
         run: |
           compose_list=$(find . -type f -name "docker-compose*.yml" -a ! -name "*windows*" -a ! -name "*gui*" -a ! -name "*macos*" -a ! -name "*hivemind*" -a ! -name "*server*" | sed -e ':a;N;$!ba;s/[\r\n]/ -f /g')
+          echo ${compose_list}
           echo "$compose_list" >> "$GITHUB_OUTPUT"
 
       - name: Docker Compose Dry Run
