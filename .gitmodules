@@ -1,3 +1,0 @@
-[submodule "ovos-docker-upstream"]
-	path = ovos-docker-upstream
-	url = https://github.com/OpenVoiceOS/ovos-docker

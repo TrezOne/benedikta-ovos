@@ -1,6 +1,0 @@
-{
-    "gender": "male",
-    "haunted": false,
-    "sounds_dir": "/home/ovos/.venvs/ovos/lib/python3.11/site-packages/ovos_skill_laugh/sounds",
-    "__mycroft_skill_firstrun": false
-}
