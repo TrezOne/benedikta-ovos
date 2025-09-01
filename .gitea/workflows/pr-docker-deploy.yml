@@ -111,15 +111,16 @@ jobs:
           for f in "${COMPOSE_FILES[@]}"; do
             echo "Processing $f"
 
+            # Create a safe filename by replacing slashes with underscores
             safe_f=$(echo "$f" | sed 's|[./]|_|g')
 
             # Fetch main version
-            git show origin/main:"$f" > "main_$f" 2>/dev/null || touch "main_$f"
-            cp "$f" "head_$f"
+            git show origin/main:"$f" > "main_${safe_f}" 2>/dev/null || touch "main_${safe_f}"
+            cp "$f" "head_${safe_f}"
 
             # Extract services and append to global list
-            yq '.services | keys | .[]' "main_$f" >> services_main_all.txt 2>/dev/null || true
-            yq '.services | keys | .[]' "head_$f" >> services_head_all.txt 2>/dev/null || true
+            yq '.services | keys | .[]' "main_${safe_f}" >> services_main_all.txt 2>/dev/null || true
+            yq '.services | keys | .[]' "head_${safe_f}" >> services_head_all.txt 2>/dev/null || true
           done
 
           # Sort and deduplicate
@@ -139,8 +140,9 @@ jobs:
             service="{}"
             modified=0
             for f in "${COMPOSE_FILES[@]}"; do
-              yq ".services[\"$service\"]" "main_$f" > tmp_main.yml 2>/dev/null || continue
-              yq ".services[\"$service\"]" "head_$f" > tmp_head.yml 2>/dev/null || continue
+              safe_f=$(echo "$f" | sed "s|[./]|_|g")
+              yq ".services[\"$service\"]" "main_${safe_f}" > tmp_main.yml 2>/dev/null || continue
+              yq ".services[\"$service\"]" "head_${safe_f}" > tmp_head.yml 2>/dev/null || continue
               if ! diff -q tmp_main.yml tmp_head.yml > /dev/null; then
                 modified=1
                 break
