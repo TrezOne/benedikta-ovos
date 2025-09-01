@@ -108,6 +108,8 @@ jobs:
           # Temp files to store all services
           touch services_main_all.txt services_head_all.txt
 
+          pwd
+
           for f in "${COMPOSE_FILES[@]}"; do
             echo "Processing $f"
 
