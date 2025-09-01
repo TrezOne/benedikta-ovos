@@ -165,6 +165,8 @@ jobs:
     name: Docker Compose Dry Run
     needs: [generate-service-list]
     runs-on: ubuntu-latest
+    outputs:
+      compose_file_list: ${{ steps.compose_file_list.outputs.compose_list }}
     env:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
