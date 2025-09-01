@@ -166,10 +166,10 @@ jobs:
     needs: [generate-service-list]
     runs-on: ubuntu-latest
     env:
-      VAULT_ADDR: ${{ secrets.RIKKU_VAULT_ADDR }}
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
       VAULT_NAMESPACE: ""
-      RIKKU_REGISTRY_PASSWORD: ${{ secrets.BOT_GITEA_PASSWORD }}
+      REGISTRY_PASSWORD: ${{ secrets.BOT_GITEA_PASSWORD }}
       DOCKER_SVC_LIST: ${{ needs.generate-service-list.outputs.svc_deploy_list }}
 
     steps:
@@ -178,7 +178,7 @@ jobs:
 
       - name: Login to Gitea Container Registry
         run: |
-          docker login -u gitea-sonarqube-bot -p ${RIKKU_REGISTRY_PASSWORD} git.trez.wtf
+          docker login -u gitea-sonarqube-bot -p ${REGISTRY_PASSWORD} git.trez.wtf
 
       - name: Cache Vault install
         id: cache-vault
@@ -196,8 +196,8 @@ jobs:
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
-          gotify_api_base: '${{ secrets.RIKKU_GOTIFY_URL }}'
-          gotify_app_token: '${{ secrets.RIKKU_RUNNER_GOTIFY_TOKEN }}'
+          gotify_api_base: '${{ secrets.GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Docker Compose Dry Run @ Rikku'
           notification_message: 'Starting Docker Compose dry run...'
 
@@ -206,6 +206,7 @@ jobs:
           vault kv get -format=json benedikta-docker/env | jq -r '.data.data' | jq -r 'keys[] as $k | "\($k)='\''\(.[$k])'\''"' > .env
 
       - name: Get list of Compose files
+        id: compose_file_list
         run: |
           compose_list=$(find . -type f -name "docker-compose*.yml" -a ! -name "*windows*" -a ! -name "*gui*" -a ! -name "*macos*" -a ! -name "*hivemind*" -a ! -name "*server*" | sed -e ':a;N;$!ba;s/[\r\n]/ -f /g')
           echo "$compose_list" >> "$GITHUB_OUTPUT"
@@ -214,11 +215,11 @@ jobs:
         uses: cssnr/stack-deploy-action@v1.3.2
         with:
           mode: compose
-          file: docker-compose.yml
-          name: 'rikku'
+          file: $ {{ steps.compose_file_list.outputs.compose_list }}
+          name: 'ovosmisc'
           host: 192.168.1.252
-          user: pi
-          ssh_key: ${{ secrets.RIKKU_SSH_PRIVATE_KEY }}
+          user: ovos
+          ssh_key: ${{ secrets.BENEDIKTA_SSH_PRIVATE_KEY }}
           args: --remove-orphans -d --dry-run ${{ needs.generate-service-list.outputs.svc_deploy_list }}
           env_file: '.env'
           registry_host: 'ghcr.io'
@@ -229,7 +230,7 @@ jobs:
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
-          gotify_api_base: '${{ secrets.RIKKU_GOTIFY_URL }}'
-          gotify_app_token: '${{ secrets.RIKKU_RUNNER_GOTIFY_TOKEN }}'
+          gotify_api_base: '${{ secrets.GOTIFY_URL }}'
+          gotify_app_token: '${{ secrets.RUNNER_GOTIFY_TOKEN }}'
           notification_title: 'GITEA: Docker Compose Dry Run @ Rikku'
           notification_message: 'Docker Compose dry run completed successfully.'
