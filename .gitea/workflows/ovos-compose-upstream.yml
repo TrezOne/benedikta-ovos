@@ -17,7 +17,7 @@ jobs:
       - name: Sync compose from ovos-docker
         run: |
           # Make the sync script executable
-          chmod +x ./update-sync-ovos-compose-compose.sh
+          chmod +x ./update-sync-ovos-compose.sh
           # Run the script
           ./update-sync-ovos-compose.sh
 
