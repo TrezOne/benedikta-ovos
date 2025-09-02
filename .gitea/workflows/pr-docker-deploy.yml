@@ -156,7 +156,7 @@ jobs:
           echo "Detected service changes:"
           cat service_changes.txt
 
-          if [[ -z service_changes.txt ]]; then
+          if [[ -z $(cat service_changes.txt) ]]; then
             echo "watchtower" > service_changes.txt
             echo "Placeholder:"
             cat service_changes.txt
