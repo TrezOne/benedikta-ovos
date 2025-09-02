@@ -1,8 +1,8 @@
 name: ovosmisc
 
-# x-watchtower-monitor: &watchtower-monitor
-#   labels:
-#     com.centurylinklabs.watchtower.monitor-only: true
+x-watchtower-monitor: &watchtower-monitor
+  labels:
+    com.centurylinklabs.watchtower.monitor-only: true
 services:
   beszel-agent:
     container_name: beszel-agent
@@ -51,58 +51,58 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-  # ovos_audio:
-  #   <<: *watchtower-monitor
-  # ovos_cli:
-  #   <<: *watchtower-monitor
-  # ovos_core:
-  #   <<: *watchtower-monitor
-  # ovos_listener:
-  #   <<: *watchtower-monitor
-  # ovos_messagebus:
-  #   <<: *watchtower-monitor
-  # ovos_phal:
-  #   <<: *watchtower-monitor
-  # ovos_phal_admin:
-  #   <<: *watchtower-monitor
-  # ovos_plugin_ggwave:
-  #   <<: *watchtower-monitor
-  # ovos_skill_alerts:
-  #   <<: *watchtower-monitor
-  # ovos_skill_camera:
-  #   <<: *watchtower-monitor
-  # ovos_skill_date_time:
-  #   <<: *watchtower-monitor
-  # ovos_skill_duckduckgo:
-  #   <<: *watchtower-monitor
-  # ovos_skill_easter_eggs:
-  #   <<: *watchtower-monitor
-  # ovos_skill_fallback_unknown:
-  #   <<: *watchtower-monitor
-  # ovos_skill_ggwave:
-  #   <<: *watchtower-monitor
-  # ovos_skill_hello_world:
-  #   <<: *watchtower-monitor
-  # ovos_skill_jokes:
-  #   <<: *watchtower-monitor
-  # ovos_skill_parrot:
-  #   <<: *watchtower-monitor
-  # ovos_skill_personal:
-  #   <<: *watchtower-monitor
-  # ovos_skill_randomness:
-  #   <<: *watchtower-monitor
-  # ovos_skill_volume:
-  #   <<: *watchtower-monitor
-  # ovos_skill_weather:
-  #   <<: *watchtower-monitor
-  # ovos_skill_wikihow:
-  #   <<: *watchtower-monitor
-  # ovos_skill_wikipedia:
-  #   <<: *watchtower-monitor
-  # ovos_skill_wolfie:
-  #   <<: *watchtower-monitor
-  # ovos_skill_wordnet:
-  #   <<: *watchtower-monitor
+  ovos_audio:
+    <<: *watchtower-monitor
+  ovos_cli:
+    <<: *watchtower-monitor
+  ovos_core:
+    <<: *watchtower-monitor
+  ovos_listener:
+    <<: *watchtower-monitor
+  ovos_messagebus:
+    <<: *watchtower-monitor
+  ovos_phal:
+    <<: *watchtower-monitor
+  ovos_phal_admin:
+    <<: *watchtower-monitor
+  ovos_plugin_ggwave:
+    <<: *watchtower-monitor
+  ovos_skill_alerts:
+    <<: *watchtower-monitor
+  ovos_skill_camera:
+    <<: *watchtower-monitor
+  ovos_skill_date_time:
+    <<: *watchtower-monitor
+  ovos_skill_duckduckgo:
+    <<: *watchtower-monitor
+  ovos_skill_easter_eggs:
+    <<: *watchtower-monitor
+  ovos_skill_fallback_unknown:
+    <<: *watchtower-monitor
+  ovos_skill_ggwave:
+    <<: *watchtower-monitor
+  ovos_skill_hello_world:
+    <<: *watchtower-monitor
+  ovos_skill_jokes:
+    <<: *watchtower-monitor
+  ovos_skill_parrot:
+    <<: *watchtower-monitor
+  ovos_skill_personal:
+    <<: *watchtower-monitor
+  ovos_skill_randomness:
+    <<: *watchtower-monitor
+  ovos_skill_volume:
+    <<: *watchtower-monitor
+  ovos_skill_weather:
+    <<: *watchtower-monitor
+  ovos_skill_wikihow:
+    <<: *watchtower-monitor
+  ovos_skill_wikipedia:
+    <<: *watchtower-monitor
+  ovos_skill_wolfie:
+    <<: *watchtower-monitor
+  ovos_skill_wordnet:
+    <<: *watchtower-monitor
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest
