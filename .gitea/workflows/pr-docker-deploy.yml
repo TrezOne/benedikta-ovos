@@ -344,7 +344,7 @@ jobs:
         uses: cssnr/stack-deploy-action@v1.4.0
         with:
           mode: compose
-          file: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}
+          file: '${{ needs.docker-compose-dry-run.outputs.compose_file_list }}'
           name: 'ovosmisc'
           host: 192.168.1.250
           user: ovos
