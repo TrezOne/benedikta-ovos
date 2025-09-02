@@ -182,6 +182,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Dump environment (masked)
+        run: |
+          # Print all vars except anything that looks like a credential
+          env | grep -viE '(PASS|TOKEN|SECRET|KEY|PRIVATE|CERT)' || true
+
       - name: Login to Gitea Container Registry
         run: |
           docker login -u gitea-sonarqube-bot -p ${REGISTRY_PASSWORD} git.trez.wtf
