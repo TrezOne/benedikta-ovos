@@ -1,8 +1,8 @@
 name: ovosmisc
 
-x-watchtower-monitor: &watchtower-monitor
-  labels:
-    com.centurylinklabs.watchtower.monitor-only: true
+# x-watchtower-monitor: &watchtower-monitor
+#   labels:
+#     com.centurylinklabs.watchtower.monitor-only: true
 services:
   beszel-agent:
     container_name: beszel-agent
