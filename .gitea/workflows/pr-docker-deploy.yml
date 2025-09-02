@@ -349,7 +349,7 @@ jobs:
           host: 192.168.1.250
           user: ovos
           ssh_key: ${{ secrets.BDIKTA_GITEA_PRIVATE_SSH_KEY }}
-          args: --remove-orphans -d ${{ needs.generate-service-list.outputs.svc_deploy_list }}
+          args: --remove-orphans -d beszel-agent docker-socket-proxy portainer-agent signoz-logspout watchtower
           env_file: '.env'
           # registry_host: 'ghcr.io'
           # registry_user: TrezOne
