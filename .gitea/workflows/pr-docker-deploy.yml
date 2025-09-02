@@ -226,7 +226,7 @@ jobs:
           echo "Compose files: $compose_list"
 
       - name: Docker Compose Dry Run
-        uses: cssnr/stack-deploy-action@v1.4.0
+        uses: cssnr/stack-deploy-action@files
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
