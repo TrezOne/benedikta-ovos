@@ -28,7 +28,7 @@
   "packageRules": [
     {
       "matchManagers": ["docker"],
-      "groupName": "docker‑updates",
+      "groupName": "docker-updates",
       "groupSlug": "docker-updates"
     },
     {
@@ -43,6 +43,15 @@
       "matchManagers": ["docker"],
       "matchUpdateTypes": ["major", "minor"],
       "automerge": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": [
+        "actions/checkout",
+        "supplypike/setup-bin"
+      ],
+      "allowedVersions": "^4.0.0",
+      "groupName": "github-actions (pinned to v4)"
     }
   ],
   "semanticCommits": "enabled",
