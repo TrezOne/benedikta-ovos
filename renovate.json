@@ -18,34 +18,50 @@
   "branchTopic": "{{service}}/{{depName}}",
   "commitMessageAction": "Update",
   "commitMessageTopic": "{{service}}/{{depName}}",
-  "docker": {
-    "fileMatch": [
-      "docker-compose.*\\.yml$",
-      "compose/.*\\.yml$"
-    ],
-    "pinDigests": true
-  },
   "packageRules": [
     {
-      "matchManagers": ["docker"],
+      "matchCategories": [
+        "docker"
+      ],
+      "managerFilePatterns": [
+        "/docker-compose.*\\.yml$/",
+        "/compose/.*\\.yml$/"
+      ],
+      "pinDigests": true
+    },
+    {
+      "matchManagers": [
+        "docker"
+      ],
       "groupName": "docker-updates",
       "groupSlug": "docker-updates"
     },
     {
-      "matchManagers": ["docker"],
-      "matchUpdateTypes": ["patch"],
+      "matchManagers": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
       "automerge": true,
       "automergeType": "branch",
       "automergeStrategy": "squash",
       "minimumReleaseAge": "3 days"
     },
     {
-      "matchManagers": ["docker"],
-      "matchUpdateTypes": ["major", "minor"],
+      "matchManagers": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
       "automerge": false
     },
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "matchPackageNames": [
         "actions/checkout",
         "supplypike/setup-bin"
