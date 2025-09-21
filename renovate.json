@@ -1,60 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
-  ],
-  "prHourlyLimit": 2,
-  "prConcurrentLimit": 5,
-  "dependencyDashboard": true,
-  "labels": [
-    "dependencies",
-    "renovate"
-  ],
-  "schedule": [
-    "before 6am on monday"
-  ],
-  "branchNameStrict": true,
-  "branchPrefix": "renovate/",
-  "branchTopic": "{{service}}/{{depName}}",
-  "commitMessageAction": "Update",
-  "commitMessageTopic": "{{service}}/{{depName}}",
-  "docker": {
-    "fileMatch": [
-      "docker-compose.*\\.yml$",
-      "compose/.*\\.yml$"
-    ],
-    "pinDigests": true
-  },
-  "packageRules": [
-    {
-      "matchManagers": ["docker"],
-      "groupName": "docker-updates",
-      "groupSlug": "docker-updates"
-    },
-    {
-      "matchManagers": ["docker"],
-      "matchUpdateTypes": ["patch"],
-      "automerge": true,
-      "automergeType": "branch",
-      "automergeStrategy": "squash",
-      "minimumReleaseAge": "3 days"
-    },
-    {
-      "matchManagers": ["docker"],
-      "matchUpdateTypes": ["major", "minor"],
-      "automerge": false
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "matchPackageNames": [
-        "actions/checkout",
-        "supplypike/setup-bin"
-      ],
-      "allowedVersions": "^4.0.0",
-      "groupName": "github-actions (pinned to v4)"
-    }
-  ],
-  "semanticCommits": "enabled",
-  "commitMessagePrefix": "🔧 ",
-  "rebaseWhen": "behind-base-branch"
+    "config:recommended",
+    "local>trez/renovate-config"
+  ]
 }
