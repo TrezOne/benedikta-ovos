@@ -1,0 +1,29 @@
+name: Sync Compose Directory
+
+on:
+  schedule:
+    # Runs at 2:00 UTC every day; adjust as needed
+    - cron: "0 2 * * *"
+  workflow_dispatch: # allows manual trigger
+
+jobs:
+  sync-compose:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repo
+      - name: Checkout benedikta-ovos
+        uses: actions/checkout@v3
+
+      - name: Sync compose from ovos-docker
+        run: |
+          # Make the sync script executable
+          chmod +x ./update-sync-ovos-compose.sh
+          # Run the script
+          ./update-sync-ovos-compose.sh
+
+      - name: Commit & push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "compose"
+          message: "Update compose/ from ovos-docker:dev"
+          push: true
