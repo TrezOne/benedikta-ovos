@@ -1,0 +1,173 @@
+name: Renovate PR Deployment
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+env:
+  HC_VAULT_VERSION: "1.18.0"
+
+jobs:
+  deploy:
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login == 'renovate-bot' &&
+      startsWith(github.event.pull_request.head.ref, 'renovate/docker-compose')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install Vault
+        uses: cpanato/vault-installer@main
+        with:
+          version: ${{ env.HC_VAULT_VERSION }}
+
+      - name: Detect Renovate update type
+        id: detect-update
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "PR body: $PR_BODY"
+
+          if echo "$PR_BODY" | grep -qE 'Update Type: (patch|minor|major|digest)'; then
+            echo "update=true" >> $GITHUB_OUTPUT
+          else
+            echo "update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop if update not patch/minor/major/digest
+        if: steps.detect-update.outputs.update != 'true'
+        run: |
+          echo "::warning::This PR does not involve patch/minor/major/digest update. Skipping deployment."
+          exit 0
+
+      - name: Get changed services from docker-compose.yml
+        id: services
+        run: |
+          echo "Getting services from main and ${{ github.ref_name }}"
+
+          # Dynamically find all docker-compose YAML files (root + compose folder)
+          COMPOSE_FILES=($(find . -maxdepth 2 -type f -name 'docker-compose*.yml' | sort))
+
+          echo "Found Compose files:"
+          printf '%s\n' "${COMPOSE_FILES[@]}"
+
+          # Temp files to store all services
+          touch services_main_all.txt services_head_all.txt
+
+          for f in "${COMPOSE_FILES[@]}"; do
+            echo "Processing $f"
+
+            # Create a safe filename by replacing slashes with underscores
+            safe_f=$(echo "$f" | sed 's|[./]|_|g')
+
+            # Fetch main version
+            git show origin/main:"$f" > "main_${safe_f}" 2>/dev/null || touch "main_${safe_f}"
+            cp "$f" "head_${safe_f}"
+
+            # Extract services and append to global list
+            yq '.services | keys | .[]' "main_${safe_f}" >> services_main_all.txt 2>/dev/null || true
+            yq '.services | keys | .[]' "head_${safe_f}" >> services_head_all.txt 2>/dev/null || true
+          done
+
+          # Sort and deduplicate
+          sort -u services_main_all.txt -o services_main_all.txt
+          sort -u services_head_all.txt -o services_head_all.txt
+
+          echo "Creating list of modified services..."
+          touch service_changes.txt
+
+          # Added services
+          comm -13 services_main_all.txt services_head_all.txt | while read service; do
+            echo "$service: added" >> service_changes.txt
+          done
+
+          # Modified services (parallelized)
+          comm -12 services_main_all.txt services_head_all.txt | xargs -n1 -P4 -I{} bash -c '
+            service="{}"
+            modified=0
+            for f in "${COMPOSE_FILES[@]}"; do
+              safe_f=$(echo "$f" | sed "s|[./]|_|g")
+              yq ".services[\"$service\"]" "main_${safe_f}" > tmp_main.yml 2>/dev/null || continue
+              yq ".services[\"$service\"]" "head_${safe_f}" > tmp_head.yml 2>/dev/null || continue
+              if ! diff -q tmp_main.yml tmp_head.yml > /dev/null; then
+                modified=1
+                break
+              fi
+            done
+            if [[ $modified -eq 1 ]]; then
+              echo "$service: modified" >> service_changes.txt
+            fi
+          '
+
+          echo "Detected service changes:"
+          cat service_changes.txt
+
+          if [[ -z $(cat service_changes.txt) ]]; then
+            echo "watchtower" > service_changes.txt
+            echo "Placeholder:"
+            cat service_changes.txt
+          fi
+
+          mod_svcs=$(cut -d':' -f1 service_changes.txt | sort | uniq | tr '\n' ' ' | sed 's/ *$//')
+          echo "docker_svc_list<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$mod_svcs" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: List of Services for (Re)Deployment
+        run: |
+          echo -e "${{ steps.services.outputs.docker_svc_list }}"
+
+      - name: Get list of Compose files
+        id: compose_file_list
+        run: |
+          compose_list=$(find . -type f -name "docker-compose*.yml" \
+            -a ! -name "*windows*" \
+            -a ! -name "*gui*" \
+            -a ! -name "*macos*" \
+            -a ! -name "*hivemind*" \
+            -a ! -name "*server*" \
+            | sed -e ':a;N;$!ba;s/[\r\n]/ /g')
+
+          echo "compose_list=$compose_list" >> "$GITHUB_OUTPUT"
+          echo "Compose files: $compose_list"
+
+      - name: Generate .env file for Docker Compose
+        run: |
+          vault kv get -format=json benedikta-docker/env | jq -r '.data.data' | jq -r 'keys[] as $k | "\($k)='\''\(.[$k])'\''"' > .env
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: "${{ secrets.GOTIFY_URL }}"
+          gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
+          notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Rikku"
+          notification_message: "Starting Docker Compose run..."
+
+      - name: Docker Compose Deployment
+        uses: cssnr/stack-deploy-action@v1.4.0
+        with:
+          mode: compose
+          file: ${{ steps.compose_file_list.outputs.compose_list }}
+          name: "ovosmisc"
+          host: 192.168.1.250
+          user: ovos
+          ssh_key: ${{ secrets.BDIKTA_GITEA_PRIVATE_SSH_KEY }}
+          args: --remove-orphans ${{ steps.services.outputs.docker_svc_list }}
+          env_file: ".env"
+          # registry_host: 'ghcr.io'
+          # registry_user: TrezOne
+          # registry_pass: ${{ secrets.GHCR_LOGIN_TOKEN }}
+          summary: true
+
+      - name: Gotify Notification
+        uses: eikendev/gotify-action@master
+        with:
+          gotify_api_base: "${{ secrets.GOTIFY_URL }}"
+          gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
+          notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Rikku"
+          notification_message: "Deployment completed successfully."
