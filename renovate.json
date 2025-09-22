@@ -1,4 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "local>trez/renovate-config"]
+  "extends": ["config:recommended", "local>trez/renovate-config"],
+  "ignorePaths": ["ovos-compose/**"]
 }
