@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 1
 
@@ -80,7 +80,7 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
       - name: Fetch base branch
         run: |
@@ -186,7 +186,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
       - name: Show Docker‑related env vars
         run: |
@@ -236,7 +236,7 @@ jobs:
           echo "Compose files: $compose_list"
 
       - name: Docker Compose Dry Run
-        uses: cssnr/stack-deploy-action@v1.4.0
+        uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
@@ -265,7 +265,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
       - name: Cache tea CLI
         id: cache-tea
@@ -309,7 +309,7 @@ jobs:
       REGISTRY_PASSWORD: ${{ secrets.BOT_GITEA_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           ref: main
 
@@ -345,7 +345,7 @@ jobs:
            echo ${COMPOSE_FILE_LIST}
 
       - name: Docker Compose Deployment
-        uses: cssnr/stack-deploy-action@v1.4.0
+        uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
         with:
           mode: compose
           file: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}

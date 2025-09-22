@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
       - name: Install Vault
         uses: cpanato/vault-installer@main
@@ -152,7 +152,7 @@ jobs:
           notification_message: "Starting Docker Compose run..."
 
       - name: Docker Compose Deployment
-        uses: cssnr/stack-deploy-action@v1.4.0
+        uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
