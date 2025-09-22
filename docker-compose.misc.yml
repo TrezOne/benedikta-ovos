@@ -13,7 +13,7 @@ services:
       HUB_URL: http://192.168.1.254:22220
     expose:
       - 45876
-    image: henrygd/beszel-agent:latest
+    image: henrygd/beszel-agent:latest@sha256:6684cf709493b3728e329daaa669c8c386e9c2da324ce4ba3ef0c55c370fdbe5
     network_mode: host
     restart: unless-stopped
     volumes:
@@ -44,7 +44,7 @@ services:
       TASKS: 0
       VOLUMES: 0
       LOG_LEVEL: debug
-    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest@sha256:3400c429c5f9e1b21d62130fb93b16e2e772d4fb7695bd52fc2b743800b9fe9e
     ports:
       - 2375:2375
     privileged: true
@@ -105,7 +105,7 @@ services:
     <<: *watchtower-monitor
   portainer-agent:
     container_name: portainer_agent
-    image: portainer/agent:latest
+    image: portainer/agent:latest@sha256:ff968fbc40c78f8a822e1e6007e9f0e451b05263fed0639d7e37cbf6f4666b13
     volumes:
       - /:/host
       - /var/lib/docker/volumes:/var/lib/docker/volumes
@@ -119,7 +119,7 @@ services:
     environment:
       ENV: prod
       SIGNOZ_LOG_ENDPOINT: http://192.168.1.254:8082
-    image: pavanputhra/logspout-signoz
+    image: pavanputhra/logspout-signoz@sha256:6da8ce12279a5262de8b2d5c083ce82d4c878c4eab702b4d328afe147ed7553b
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -146,7 +146,7 @@ services:
     expose:
       - 8080
     hostname: Benedikta
-    image: ghcr.io/containrrr/watchtower:latest
+    image: ghcr.io/containrrr/watchtower:latest@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038
     restart: unless-stopped
     volumes:
       - /etc/localtime:/etc/localtime:ro
