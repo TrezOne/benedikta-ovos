@@ -10,7 +10,7 @@ on:
       - "./docker-compose.misc.yml"
 
 env:
-  VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+  VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
   VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
   HC_VAULT_VERSION: "1.18.0"
 
@@ -146,7 +146,7 @@ jobs:
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
-          gotify_api_base: "${{ secrets.GOTIFY_URL }}"
+          gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
           notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Rikku"
           notification_message: "Starting Docker Compose run..."
@@ -159,7 +159,7 @@ jobs:
           name: "ovosmisc"
           host: 192.168.1.250
           user: ovos
-          ssh_key: ${{ secrets.BDIKTA_GITEA_PRIVATE_SSH_KEY }}
+          ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
           args: --remove-orphans ${{ steps.services.outputs.docker_svc_list }}
           env_file: ".env"
           # registry_host: 'ghcr.io'
@@ -170,7 +170,7 @@ jobs:
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
         with:
-          gotify_api_base: "${{ secrets.GOTIFY_URL }}"
+          gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
           notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Rikku"
           notification_message: "Deployment completed successfully."
