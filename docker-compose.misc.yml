@@ -48,6 +48,14 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:0.12.3
+    ports:
+      - 11434:11434
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:a454c023f4b79ae308e372e5a4ab0d37961d6d8ad88fe5945544435203ded198
@@ -71,3 +79,5 @@ services:
 volumes:
   beszel-agent-data:
     name: beszel-agent-data
+  ollama:
+    name: ollama
