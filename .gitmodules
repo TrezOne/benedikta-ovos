@@ -1,0 +1,4 @@
+[submodule "ovos-compose"]
+	path = ovos-compose
+	url = https://github.com/OpenVoiceOS/ovos-docker.git
+	branch = dev
