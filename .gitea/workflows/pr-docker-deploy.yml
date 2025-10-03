@@ -6,8 +6,7 @@ on:
     branches-ignore:
       - "main"
     paths:
-      - "docker-compose.misc.yml"
-      - "compose/docker-compose*.yml"
+      - "**/docker-compose*.yml"
 
 env:
   HC_VAULT_VERSION: "1.20.4"
@@ -186,18 +185,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
-      # - name: Login to Gitea Container Registry
-      #   run: |
-      #     docker login -u gitea-sonarqube-bot -p ${REGISTRY_PASSWORD} git.trez.wtf
-
       - name: Login to Docker Hub
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        env:
+          DOCKER_HOST: tcp://192.168.1.252:2375
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        env:
+          DOCKER_HOST: tcp://192.168.1.252:2375
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USER }}
@@ -205,23 +204,12 @@ jobs:
 
       - name: Login to Private Gitea Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        env:
+          DOCKER_HOST: tcp://192.168.1.252:2375
         with:
           registry: git.trez.wtf
           username: ${{ secrets.BOT_GITEA_USER }}
           password: ${{ secrets.BOT_GITEA_PASSWORD }}
-
-      - name: Cache Vault install
-        id: cache-vault
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: /opt/hostedtoolcache/vault/${{ env.HC_VAULT_VERSION }}/x64
-          key: vault-${{ runner.os }}-${{ env.HC_VAULT_VERSION }}
-
-      - name: Install Vault (only if not cached)
-        if: steps.cache-vault.outputs.cache-hit != 'true'
-        uses: cpanato/vault-installer@main
-        with:
-          version: ${{ env.HC_VAULT_VERSION }}
 
       - name: Gotify Notification
         uses: eikendev/gotify-action@master
@@ -230,10 +218,6 @@ jobs:
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
           notification_title: "GITEA: Docker Compose Dry Run @ Benedikta"
           notification_message: "Starting Docker Compose dry run..."
-
-      - name: Generate .env file for Docker Compose
-        run: |
-          vault kv get -format=json benedikta-docker/env | jq -r '.data.data' | jq -r 'keys[] as $k | "\($k)='\''\(.[$k])'\''"' > .env
 
       - name: Get list of Compose files
         id: compose_file_list
@@ -248,6 +232,15 @@ jobs:
 
           echo "compose_list=$compose_list" >> "$GITHUB_OUTPUT"
           echo "Compose files: $compose_list"
+
+      - name: Generate .env from Hashicorp Vault
+        uses: https://git.trez.wtf/Trez/hc-vault-env@main
+        with:
+          HC_VAULT_VERSION: ${{ env.HC_VAULT_VERSION }}
+          HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
+          HC_VAULT_USERNAME: ${{ secrets.VAULT_GITEA_USER }}
+          HC_VAULT_PASSWORD: ${{ secrets.VAULT_GITEA_PASSWORD }}
+          HC_VAULT_SECRETS_PATH: benedikta-docker/env
 
       - name: Docker Compose Dry Run
         uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
@@ -327,27 +320,18 @@ jobs:
         with:
           ref: main
 
-      - name: Cache Vault install
-        id: cache-vault
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: /opt/hostedtoolcache/vault/${{ env.HC_VAULT_VERSION }}/x64
-          key: vault-${{ runner.os }}-${{ env.HC_VAULT_VERSION }}
-
-      - name: Install Vault (only if not cached)
-        if: steps.cache-vault.outputs.cache-hit != 'true'
-        uses: cpanato/vault-installer@main
-        with:
-          version: ${{ env.HC_VAULT_VERSION }}
-
       - name: Login to Docker Hub
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        env:
+          DOCKER_HOST: tcp://192.168.1.252:2375
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        env:
+          DOCKER_HOST: tcp://192.168.1.252:2375
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USER }}
@@ -355,6 +339,8 @@ jobs:
 
       - name: Login to Private Gitea Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        env:
+          DOCKER_HOST: tcp://192.168.1.252:2375
         with:
           registry: git.trez.wtf
           username: ${{ secrets.BOT_GITEA_USER }}
@@ -368,11 +354,14 @@ jobs:
           notification_title: "GITEA: Docker Compose Deployment @ Benedikta"
           notification_message: "Starting Docker Compose run..."
 
-      - name: Generate .env file for deployment
-        run: |
-          vault kv get -format=json benedikta-docker/env | jq -r '.data.data' | jq -r 'keys[] as $k | "\($k)='\''\(.[$k])'\''"' > .env
-          echo ${DOCKER_SVC_LIST}
-          echo ${COMPOSE_FILE_LIST}
+      - name: Generate .env from Hashicorp Vault
+        uses: https://git.trez.wtf/Trez/hc-vault-env@main
+        with:
+          HC_VAULT_VERSION: ${{ env.HC_VAULT_VERSION }}
+          HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
+          HC_VAULT_USERNAME: ${{ secrets.VAULT_GITEA_USER }}
+          HC_VAULT_PASSWORD: ${{ secrets.VAULT_GITEA_PASSWORD }}
+          HC_VAULT_SECRETS_PATH: benedikta-docker/env
 
       - name: Docker Compose Deployment
         uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
