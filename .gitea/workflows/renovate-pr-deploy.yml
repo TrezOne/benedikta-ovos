@@ -147,7 +147,7 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Rikku"
+          notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Benedikta"
           notification_message: "Starting Docker Compose run..."
 
       - name: Generate .env from Hashicorp Vault
@@ -177,5 +177,5 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Rikku"
+          notification_title: "GITEA: [RENOVATE] Docker Compose Deployment @ Benedikta"
           notification_message: "Deployment completed successfully."
