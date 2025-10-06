@@ -5,6 +5,9 @@ on:
     - cron: 30 */2 * * *
   workflow_dispatch:
 
+env:
+  HC_VAULT_VERSION: "1.20.4"
+
 jobs:
   readme-services:
    name: Generate Services List
