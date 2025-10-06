@@ -53,6 +53,11 @@ jobs:
 
     - name: Generate combined service list
       run: |
+        # Load environment variables from .env
+        if [ -f ".env" ]; then
+          export $(grep -v '^#' .env | xargs)
+        fi
+
         COMPOSE_FILES=$(find . -type f -name "docker-compose*.yml" \
           -a ! -name "*windows*" \
           -a ! -name "*gui*" \
@@ -69,9 +74,15 @@ jobs:
         echo "Processing combined Compose files:"
         echo "$COMPOSE_FILES"
 
-        # Process all compose files together so anchors and merges resolve across files
-        yq -o=json eval-all 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' $COMPOSE_FILES \
-        | jq -s add | jq 'unique_by(.service)' > services.json
+        # Replace env variables in compose files before merging
+        yq -o=json eval-all '
+          explode(.) |
+          .services |= with_entries(
+            .value.image |= sub("\\$\\{VERSION\\}", env(VERSION) // "")
+          ) |
+          .services | to_entries | map({"service": .key, "image": .value.image})
+        ' $COMPOSE_FILES \
+          | jq -s add | jq 'unique_by(.service)' > services.json
 
         if [ ! -s services.json ]; then
           echo "No services extracted. Exiting."
