@@ -64,15 +64,7 @@ jobs:
         docker compose --env-file .env $docker_compose_args config > combined_compose.yml
 
         echo "Extracting services..."
-        yq -o=json eval '
-          .services
-          | to_entries
-          | map({
-              service: .key,
-              image: (.value.image // "N/A")
-            })
-        ' combined_compose.yml \
-          > temp_services.json
+        yq eval -o=json '.services | to_entries | map({"service": .key, "image": (.value.image // "N/A")})' combined_compose.yml > temp_services.json
 
         jq -s add temp_services.json | jq 'unique_by(.service)' > services.json
 
