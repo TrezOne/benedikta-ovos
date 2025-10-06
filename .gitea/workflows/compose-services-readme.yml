@@ -53,35 +53,34 @@ jobs:
 
     - name: Generate combined service list
       run: |
-        set -euo pipefail
+        echo "[]" > temp_services.json
 
-        echo "[]" > combined_services.json
+        # Load .env into environment
+        if [ -f .env ]; then
+          export $(grep -v '^#' .env | xargs)
+        fi
+
+        # Read compose files list
+        IFS=$'\n' read -rd '' -a COMPOSE_FILES <<< "${{ steps.find-compose-files.outputs.compose_files }}"
 
         echo "Processing combined Compose files:"
-        for f in ${{ steps.find-compose-files.outputs.compose_files }}; do
-          echo "  - $f"
+        for f in "${COMPOSE_FILES[@]}"; do
+          echo "  $f"
+
+          # Use yq to parse service name + image, expanding anchors
+          yq eval-all '
+            select(fileIndex == 0) * select(fileIndex > 0) |
+            .services | to_entries | map({
+              service: .key,
+              image: (.value.image // "")
+            })' "${COMPOSE_FILES[@]}" \
+            >> temp_services.json
         done
 
-        echo "Generating merged docker-compose config..."
-        docker compose \
-          $(for f in ${{ steps.find-compose-files.outputs.compose_files }}; do echo "-f $f"; done) \
-          --env-file .env \
-          config > combined.yml
+        # Merge all arrays and deduplicate
+        jq -s 'add | unique_by(.service)' temp_services.json > services.json
 
-        echo "Extracting services and images..."
-        yq -o=json '
-          .services
-          | to_entries
-          | map({
-              service: .key,
-              image: (.value.image // "null")
-            })
-        ' combined.yml > combined_services.json
-
-        echo "Deduplicating services..."
-        jq 'unique_by(.service)' combined_services.json > services.json
-
-        echo "Final services.json:"
+        echo "Generated services.json:"
         cat services.json
 
     - name: Generate Markdown Table
