@@ -53,7 +53,7 @@ jobs:
 
     - name: Generate combined service list
       run: |
-        # Load environment variables from .env
+        # Load .env variables safely
         if [ -f ".env" ]; then
           set -o allexport
           source .env
@@ -76,13 +76,16 @@ jobs:
         echo "Processing combined Compose files:"
         echo "$COMPOSE_FILES"
 
-        # Replace env variables in compose files before merging
         yq -o=json eval-all '
           explode(.) |
-          .services |= with_entries(
-            .value.image |= sub("\\$\\{VERSION\\}", env(VERSION) // "")
-          ) |
-          .services | to_entries | map({"service": .key, "image": .value.image})
+          .services | to_entries |
+          map({
+            "service": .key,
+            "image": (.value.image // "" |
+                      sub("\\$\\{VERSION\\}", env(VERSION) // "") |
+                      sub("\\$\\{PULL_POLICY\\}", env(PULL_POLICY) // "") |
+                      sub("\\$\\{.*?\\}", ""))
+          })
         ' $COMPOSE_FILES \
           | jq -s add | jq 'unique_by(.service)' > services.json
 
