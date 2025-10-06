@@ -19,6 +19,15 @@ jobs:
     - name: Install yq
       uses: dcarbone/install-yq-action@4075b4dca348d74bd83f2bf82d30f25d7c54539b # v1.3.1
 
+    - name: Generate .env from Hashicorp Vault
+      uses: https://git.trez.wtf/Trez/hc-vault-env@main
+      with:
+        HC_VAULT_VERSION: ${{ env.HC_VAULT_VERSION }}
+        HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
+        HC_VAULT_USERNAME: ${{ secrets.VAULT_GITEA_USER }}
+        HC_VAULT_PASSWORD: ${{ secrets.VAULT_GITEA_PASSWORD }}
+        HC_VAULT_SECRETS_PATH: benedikta-docker/env
+
     - name: Find docker-compose YAML files
       id: find-compose-files
       run: |
@@ -57,35 +66,30 @@ jobs:
         echo "Processing combined Compose files:"
         echo "$COMPOSE_FILES"
 
+        echo "[]" > temp_services.json
         FOUND=0
 
-        # Build docker compose arguments
-        COMPOSE_ARGS=()
         while IFS= read -r f; do
-          COMPOSE_ARGS+=("-f" "$f")
+          [ -z "$f" ] && continue
+          echo "Processing $f"
+
+          # Resolve merge anchors for this file
+          yq -o=json eval-all 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' "$f" > tmp.json
+
+          # Merge into temp_services.json
+          jq -s 'add' temp_services.json tmp.json > temp_merged.json
+          mv temp_merged.json temp_services.json
+
+          FOUND=1
         done <<< "$COMPOSE_FILES"
 
-        echo "Running: docker compose ${COMPOSE_ARGS[*]} config"
-
-        docker compose "${COMPOSE_ARGS[@]}" config --format yaml > merged_compose.yml
-
-        if [ ! -s merged_compose.yml ]; then
-          echo "Merged compose file is empty. Exiting."
-          exit 1
-        fi
-
-        echo "Merged compose file generated."
-
-        # Extract service list with image info
-        yq -o=json 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' merged_compose.yml \
-          | jq 'unique_by(.service)' > services.json
-
-        FOUND=1
-
         if [ "$FOUND" -eq 0 ]; then
-          echo "No docker-compose services found. Exiting."
+          echo "No docker-compose files processed. Exiting."
           exit 0
         fi
+
+        # Deduplicate services
+        jq 'unique_by(.service)' temp_services.json > services.json
 
         echo "Generated services.json with all services and images."
 
