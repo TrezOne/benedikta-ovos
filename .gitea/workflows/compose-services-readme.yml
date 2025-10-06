@@ -55,7 +55,9 @@ jobs:
       run: |
         # Load environment variables from .env
         if [ -f ".env" ]; then
-          export $(grep -v '^#' .env | xargs)
+          set -o allexport
+          source .env
+          set +o allexport
         fi
 
         COMPOSE_FILES=$(find . -type f -name "docker-compose*.yml" \
