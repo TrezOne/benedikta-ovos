@@ -41,16 +41,13 @@ jobs:
 
     - name: Generate combined service list
       run: |
-        echo "[]" > temp_services.json
-        FOUND=0
-
         COMPOSE_FILES=$(find . -type f -name "docker-compose*.yml" \
-          -a ! -name "*windows*" \
-          -a ! -name "*gui*" \
-          -a ! -name "*macos*" \
-          -a ! -name "*hivemind*" \
-          -a ! -name "*server*" \
-          | sort)
+        -a ! -name "*windows*" \
+        -a ! -name "*gui*" \
+        -a ! -name "*macos*" \
+        -a ! -name "*hivemind*" \
+        -a ! -name "*server*" \
+        | sort)
 
         if [ -z "$COMPOSE_FILES" ]; then
           echo "No docker-compose files found. Exiting."
@@ -61,22 +58,12 @@ jobs:
         echo "$COMPOSE_FILES"
 
         # Run yq once globally to resolve anchors, get all services
-        yq -o=json eval-all 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' $COMPOSE_FILES > all_services.json
-
-        # Loop over files for logging and merging
-        while IFS= read -r f; do
-          [ -z "$f" ] && continue
-          echo "Processing $f"
-          FOUND=1
-        done <<< "$COMPOSE_FILES"
-
-        if [ "$FOUND" -eq 0 ]; then
-          echo "No docker-compose files found. Exiting."
-          exit 0
-        fi
+        yq -o=json eval-all 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' $COMPOSE_FILES \
+          | jq -s add > services.json
 
         # Deduplicate services globally
-        jq 'unique_by(.service)' all_services.json > services.json
+        jq 'unique_by(.service)' services.json > services_unique.json
+        mv services_unique.json services.json
 
     - name: Generate Markdown Table
       uses: gazab/create-markdown-table@6686233d7008e8d8b9d4bbdbfd1fb1ae510019f0 # v1.0.7
