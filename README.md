@@ -15,24 +15,24 @@
 | ovos_phal |  |
 | ovos_phal_admin |  |
 | ovos_plugin_ggwave |  |
-| ovos_skill_alerts | docker.io/smartgic/ovos-skill-alerts:alpha |
-| ovos_skill_camera | docker.io/smartgic/ovos-skill-camera:alpha |
-| ovos_skill_date_time | docker.io/smartgic/ovos-skill-date-time:alpha |
-| ovos_skill_duckduckgo | docker.io/smartgic/ovos-skill-duckduckgo:alpha |
-| ovos_skill_easter_eggs | docker.io/smartgic/ovos-skill-easter-eggs:alpha |
-| ovos_skill_fallback_unknown | docker.io/smartgic/ovos-skill-fallback-unknown:alpha |
-| ovos_skill_ggwave | docker.io/smartgic/ovos-skill-ggwave:alpha |
-| ovos_skill_hello_world | docker.io/smartgic/ovos-skill-hello-world:alpha |
-| ovos_skill_jokes | docker.io/smartgic/ovos-skill-jokes:alpha |
-| ovos_skill_parrot | docker.io/smartgic/ovos-skill-parrot:alpha |
-| ovos_skill_personal | docker.io/smartgic/ovos-skill-personal:alpha |
-| ovos_skill_randomness | docker.io/smartgic/ovos-skill-randomness:alpha |
-| ovos_skill_volume | docker.io/smartgic/ovos-skill-volume:alpha |
-| ovos_skill_weather | docker.io/smartgic/ovos-skill-weather:alpha |
-| ovos_skill_wikihow | docker.io/smartgic/ovos-skill-wikihow:alpha |
-| ovos_skill_wikipedia | docker.io/smartgic/ovos-skill-wikipedia:alpha |
-| ovos_skill_wolfie | docker.io/smartgic/ovos-skill-wolfie:alpha |
-| ovos_skill_wordnet | docker.io/smartgic/ovos-skill-wordnet:alpha |
+| ovos_skill_alerts | docker.io/smartgic/ovos-skill-alerts: |
+| ovos_skill_camera | docker.io/smartgic/ovos-skill-camera: |
+| ovos_skill_date_time | docker.io/smartgic/ovos-skill-date-time: |
+| ovos_skill_duckduckgo | docker.io/smartgic/ovos-skill-duckduckgo: |
+| ovos_skill_easter_eggs | docker.io/smartgic/ovos-skill-easter-eggs: |
+| ovos_skill_fallback_unknown | docker.io/smartgic/ovos-skill-fallback-unknown: |
+| ovos_skill_ggwave | docker.io/smartgic/ovos-skill-ggwave: |
+| ovos_skill_hello_world | docker.io/smartgic/ovos-skill-hello-world: |
+| ovos_skill_jokes | docker.io/smartgic/ovos-skill-jokes: |
+| ovos_skill_parrot | docker.io/smartgic/ovos-skill-parrot: |
+| ovos_skill_personal | docker.io/smartgic/ovos-skill-personal: |
+| ovos_skill_randomness | docker.io/smartgic/ovos-skill-randomness: |
+| ovos_skill_volume | docker.io/smartgic/ovos-skill-volume: |
+| ovos_skill_weather | docker.io/smartgic/ovos-skill-weather: |
+| ovos_skill_wikihow | docker.io/smartgic/ovos-skill-wikihow: |
+| ovos_skill_wikipedia | docker.io/smartgic/ovos-skill-wikipedia: |
+| ovos_skill_wolfie | docker.io/smartgic/ovos-skill-wolfie: |
+| ovos_skill_wordnet | docker.io/smartgic/ovos-skill-wordnet: |
 | portainer-agent | portainer/agent:latest@sha256:a454c023f4b79ae308e372e5a4ab0d37961d6d8ad88fe5945544435203ded198 |
 | signoz-logspout | pavanputhra/logspout-signoz@sha256:6da8ce12279a5262de8b2d5c083ce82d4c878c4eab702b4d328afe147ed7553b |
 
