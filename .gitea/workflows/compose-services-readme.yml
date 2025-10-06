@@ -47,7 +47,7 @@ jobs:
           [ -z "$f" ] && continue
           echo "Processing $f"
           # Extract JSON array for this compose file
-          yq -o=json '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" > tmp.json
+          yq -o=json eval-all --yaml-fix-merge-anchor-to-spec=true 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' "$f" > tmp.json
           # Merge all arrays into one JSON array-of-arrays
           jq -s 'add' temp_services.json tmp.json > temp_merged.json
           mv temp_merged.json temp_services.json
