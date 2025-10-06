@@ -59,8 +59,15 @@ jobs:
 
         FOUND=0
 
-        # Run docker compose config to merge files and interpolate env vars
-        docker compose -f $(echo $COMPOSE_FILES | tr ' ' ' -f ') config --format yaml > merged_compose.yml
+        # Build docker compose arguments
+        COMPOSE_ARGS=()
+        while IFS= read -r f; do
+          COMPOSE_ARGS+=("-f" "$f")
+        done <<< "$COMPOSE_FILES"
+
+        echo "Running: docker compose ${COMPOSE_ARGS[*]} config"
+
+        docker compose "${COMPOSE_ARGS[@]}" config --format yaml > merged_compose.yml
 
         if [ ! -s merged_compose.yml ]; then
           echo "Merged compose file is empty. Exiting."
