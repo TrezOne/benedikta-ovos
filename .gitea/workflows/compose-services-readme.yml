@@ -51,35 +51,16 @@ jobs:
 
     - name: Generate combined service list
       run: |
-        echo "[]" > temp_services.json
+        echo "[]" > combined_services.json
 
-        # Load .env into environment
-        if [ -f .env ]; then
-          export $(grep -v '^#' .env | xargs)
-        fi
-
-        # Read compose files list
-        IFS=$'\n' read -rd '' -a COMPOSE_FILES <<< "${{ steps.find-compose-files.outputs.compose_files }}"
-
-        echo "Processing combined Compose files:"
-        for f in "${COMPOSE_FILES[@]}"; do
-          echo "  $f"
-
-          # Use yq to parse service name + image, expanding anchors
-          yq eval-all '
-            select(fileIndex == 0) * select(fileIndex > 0) |
-            .services | to_entries | map({
-              service: .key,
-              image: (.value.image // "")
-            })' "${COMPOSE_FILES[@]}" \
+        echo "${{ steps.find-compose-files.outputs.compose_files }}" | while IFS= read -r f; do
+          [ -z "$f" ] && continue
+          echo "Processing $f"
+          yq -o=json eval '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" \
             >> temp_services.json
         done
 
-        # Merge all arrays and deduplicate
-        jq -s 'add | unique_by(.service)' temp_services.json > services.json
-
-        echo "Generated services.json:"
-        cat services.json
+        jq -s add temp_services.json | jq 'unique_by(.service)' > services.json
 
     - name: Generate Markdown Table
       uses: gazab/create-markdown-table@6686233d7008e8d8b9d4bbdbfd1fb1ae510019f0 # v1.0.7
