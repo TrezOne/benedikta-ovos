@@ -46,7 +46,7 @@ jobs:
         while IFS= read -r f; do
           [ -z "$f" ] && continue
           echo "Processing $f"
-          yq '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" >> temp_services.json
+          yq eval-all --yaml-fix-merge-anchor-to-spec=true '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" >> temp_services.json
           FOUND=1
         done <<< "${{ steps.find-compose-files.outputs.compose_files }}"
 
