@@ -71,7 +71,7 @@ jobs:
 
         # Process all compose files together so anchors and merges resolve across files
         yq -o=json eval-all 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' $COMPOSE_FILES \
-          | jq 'unique_by(.service)' > services.json
+        | jq -s add | jq 'unique_by(.service)' > services.json
 
         if [ ! -s services.json ]; then
           echo "No services extracted. Exiting."
