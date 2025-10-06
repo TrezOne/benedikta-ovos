@@ -53,48 +53,36 @@ jobs:
 
     - name: Generate combined service list
       run: |
-        # Load .env variables safely
-        if [ -f ".env" ]; then
-          set -o allexport
-          source .env
-          set +o allexport
-        fi
+        set -euo pipefail
 
-        COMPOSE_FILES=$(find . -type f -name "docker-compose*.yml" \
-          -a ! -name "*windows*" \
-          -a ! -name "*gui*" \
-          -a ! -name "*macos*" \
-          -a ! -name "*hivemind*" \
-          -a ! -name "*server*" \
-          | sort)
-
-        if [ -z "$COMPOSE_FILES" ]; then
-          echo "No docker-compose files found. Exiting."
-          exit 0
-        fi
+        echo "[]" > combined_services.json
 
         echo "Processing combined Compose files:"
-        echo "$COMPOSE_FILES"
+        for f in ${{ steps.find-compose-files.outputs.compose_files }}; do
+          echo "  - $f"
+        done
 
-        yq -o=json eval-all '
-          explode(.) |
-          .services | to_entries |
-          map({
-            "service": .key,
-            "image": (.value.image // "" |
-                      sub("\\$\\{VERSION\\}", env(VERSION) // "") |
-                      sub("\\$\\{PULL_POLICY\\}", env(PULL_POLICY) // "") |
-                      sub("\\$\\{.*?\\}", ""))
-          })
-        ' $COMPOSE_FILES \
-          | jq -s add | jq 'unique_by(.service)' > services.json
+        echo "Generating merged docker-compose config..."
+        docker compose \
+          $(for f in ${{ steps.find-compose-files.outputs.compose_files }}; do echo "-f $f"; done) \
+          --env-file .env \
+          config > combined.yml
 
-        if [ ! -s services.json ]; then
-          echo "No services extracted. Exiting."
-          exit 1
-        fi
+        echo "Extracting services and images..."
+        yq -o=json '
+          .services
+          | to_entries
+          | map({
+              service: .key,
+              image: (.value.image // "null")
+            })
+        ' combined.yml > combined_services.json
 
-        echo "✅ Generated services.json with all services and images."
+        echo "Deduplicating services..."
+        jq 'unique_by(.service)' combined_services.json > services.json
+
+        echo "Final services.json:"
+        cat services.json
 
     - name: Generate Markdown Table
       uses: gazab/create-markdown-table@6686233d7008e8d8b9d4bbdbfd1fb1ae510019f0 # v1.0.7
