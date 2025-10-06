@@ -57,13 +57,30 @@ jobs:
         echo "Processing combined Compose files:"
         echo "$COMPOSE_FILES"
 
-        # Run yq once globally to resolve anchors, get all services
-        yq -o=json eval-all 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' $COMPOSE_FILES \
-          | jq -s add > services.json
+        FOUND=0
 
-        # Deduplicate services globally
-        jq 'unique_by(.service)' services.json > services_unique.json
-        mv services_unique.json services.json
+        # Run docker compose config to merge files and interpolate env vars
+        docker compose -f $(echo $COMPOSE_FILES | tr ' ' ' -f ') config --format yaml > merged_compose.yml
+
+        if [ ! -s merged_compose.yml ]; then
+          echo "Merged compose file is empty. Exiting."
+          exit 1
+        fi
+
+        echo "Merged compose file generated."
+
+        # Extract service list with image info
+        yq -o=json 'explode(.) | .services | to_entries | map({"service": .key, "image": .value.image})' merged_compose.yml \
+          | jq 'unique_by(.service)' > services.json
+
+        FOUND=1
+
+        if [ "$FOUND" -eq 0 ]; then
+          echo "No docker-compose services found. Exiting."
+          exit 0
+        fi
+
+        echo "Generated services.json with all services and images."
 
     - name: Generate Markdown Table
       uses: gazab/create-markdown-table@6686233d7008e8d8b9d4bbdbfd1fb1ae510019f0 # v1.0.7
