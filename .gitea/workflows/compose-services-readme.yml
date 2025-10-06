@@ -29,20 +29,32 @@ jobs:
           -a ! -name "*hivemind*" \
           -a ! -name "*server*" \
           | sort)
-        echo "compose_files=$COMPOSE_FILES" >> "$GITHUB_OUTPUT"
+
         echo "Found Compose files:"
         echo "$COMPOSE_FILES"
 
+        {
+          echo "compose_files<<EOF"
+          echo "$COMPOSE_FILES"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
     - name: Generate combined service list
       run: |
-        echo "[]" > combined_services.json
-        for f in ${{ steps.find-compose-files.outputs.compose_files }}; do
+        echo "[]" > temp_services.json
+        FOUND=0
+        while IFS= read -r f; do
+          [ -z "$f" ] && continue
           echo "Processing $f"
-          yq '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" \
-            >> temp_services.json
-        done
+          yq '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" >> temp_services.json
+          FOUND=1
+        done <<< "${{ steps.find-compose-files.outputs.compose_files }}"
 
-        # Merge all service arrays into one
+        if [ "$FOUND" -eq 0 ]; then
+          echo "No docker-compose files found. Exiting."
+          exit 0
+        fi
+
         jq -s add temp_services.json | jq 'unique_by(.service)' > services.json
 
     - name: Generate Markdown Table
