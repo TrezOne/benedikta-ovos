@@ -51,14 +51,28 @@ jobs:
 
     - name: Generate combined service list
       run: |
-        echo "[]" > combined_services.json
+        echo "Processing combined Compose files:"
+        echo "${{ steps.find-compose-files.outputs.compose_files }}"
 
-        echo "${{ steps.find-compose-files.outputs.compose_files }}" | while IFS= read -r f; do
+        docker_compose_args=""
+        while IFS= read -r f; do
           [ -z "$f" ] && continue
-          echo "Processing $f"
-          yq -o=json eval '.services | to_entries | map({"service": .key, "image": .value.image})' "$f" \
-            >> temp_services.json
-        done
+          docker_compose_args="$docker_compose_args -f $f"
+        done <<< "${{ steps.find-compose-files.outputs.compose_files }}"
+
+        echo "Running: docker compose --env-file .env $docker_compose_args config"
+        docker compose --env-file .env $docker_compose_args config > combined_compose.yml
+
+        echo "Extracting services..."
+        yq -o=json eval '
+          .services
+          | to_entries
+          | map({
+              service: .key,
+              image: (.value.image // "N/A")
+            })
+        ' combined_compose.yml \
+          > temp_services.json
 
         jq -s add temp_services.json | jq 'unique_by(.service)' > services.json
 
