@@ -35,21 +35,19 @@ jobs:
       id: find-compose-files
       run: |
         COMPOSE_FILES=$(find . -type f -name "docker-compose*.yml" \
-          -a ! -name "*windows*" \
-          -a ! -name "*gui*" \
-          -a ! -name "*macos*" \
-          -a ! -name "*hivemind*" \
-          -a ! -name "*server*" \
-          | sort)
+        -a ! -name "*windows*" \
+        -a ! -name "*gui*" \
+        -a ! -name "*macos*" \
+        -a ! -name "*hivemind*" \
+        -a ! -name "*server*" \
+        | sort)
+
+        echo "compose_files<<EOF" >> "$GITHUB_OUTPUT"
+        echo "$COMPOSE_FILES" >> "$GITHUB_OUTPUT"
+        echo "EOF" >> "$GITHUB_OUTPUT"
 
         echo "Found Compose files:"
         echo "$COMPOSE_FILES"
-
-        {
-          echo "compose_files<<EOF"
-          echo "$COMPOSE_FILES"
-          echo "EOF"
-        } >> "$GITHUB_OUTPUT"
 
     - name: Generate combined service list
       run: |
