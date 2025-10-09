@@ -4,7 +4,7 @@
 
 | Service | Image |
 | --- | --- |
-| beszel-agent | henrygd/beszel-agent:latest@sha256:17fe8c1bf093bc65fba8808093de6b3a3a8ed915bc59eef9815ea42c889aab6a |
+| beszel-agent | henrygd/beszel-agent:latest@sha256:da76c4091dc5a1504d53df6e9b880ce3f5fe3adf369656fcf4f300970a4452e8 |
 | docker-socket-proxy | ghcr.io/tecnativa/docker-socket-proxy:latest@sha256:3400c429c5f9e1b21d62130fb93b16e2e772d4fb7695bd52fc2b743800b9fe9e |
 | ollama | ollama/ollama:0.12.3@sha256:c622a7adec67cf5bd7fe1802b7e26aa583a955a54e91d132889301f50c3e0bd0 |
 | ovos_audio | docker.io/smartgic/ovos-audio:alpha |
