@@ -6,7 +6,7 @@
 | --- | --- |
 | beszel-agent | henrygd/beszel-agent:latest@sha256:da76c4091dc5a1504d53df6e9b880ce3f5fe3adf369656fcf4f300970a4452e8 |
 | docker-socket-proxy | ghcr.io/tecnativa/docker-socket-proxy:latest@sha256:3400c429c5f9e1b21d62130fb93b16e2e772d4fb7695bd52fc2b743800b9fe9e |
-| ollama | ollama/ollama:0.12.5@sha256:e43c26d2d1ebc726bc932166d2979086310b2f9c5ccd64fb06b55d1ea2c4f2cc |
+| ollama | ollama/ollama:0.12.6@sha256:a61a8fd395dbb931cc8cb1b5da7a2510746575c87113fdc45b647ee59ef7f808 |
 | ovos_audio | docker.io/smartgic/ovos-audio:alpha |
 | ovos_cli | docker.io/smartgic/ovos-cli:alpha |
 | ovos_core | docker.io/smartgic/ovos-core:alpha |
