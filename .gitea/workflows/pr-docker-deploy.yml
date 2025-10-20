@@ -216,9 +216,9 @@ jobs:
         with:
           HC_VAULT_VERSION: ${{ env.HC_VAULT_VERSION }}
           HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
-          HC_VAULT_USERNAME: ${{ secrets.VAULT_GITEA_USER }}
-          HC_VAULT_PASSWORD: ${{ secrets.VAULT_GITEA_PASSWORD }}
-          HC_VAULT_SECRETS_PATH: benedikta-docker/env
+          HC_VAULT_AUTH: token
+          HC_VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
+          HC_VAULT_SECRETS_PATH: rinoa-docker/env
 
       - name: Docker Compose Dry Run
         uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
@@ -337,9 +337,9 @@ jobs:
         with:
           HC_VAULT_VERSION: ${{ env.HC_VAULT_VERSION }}
           HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
-          HC_VAULT_USERNAME: ${{ secrets.VAULT_GITEA_USER }}
-          HC_VAULT_PASSWORD: ${{ secrets.VAULT_GITEA_PASSWORD }}
-          HC_VAULT_SECRETS_PATH: benedikta-docker/env
+          HC_VAULT_AUTH: token
+          HC_VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
+          HC_VAULT_SECRETS_PATH: rinoa-docker/env
 
       - name: Docker Compose Deployment
         uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
