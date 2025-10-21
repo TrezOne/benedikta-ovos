@@ -27,9 +27,9 @@ jobs:
       with:
         HC_VAULT_VERSION: ${{ env.HC_VAULT_VERSION }}
         HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
-        HC_VAULT_USERNAME: ${{ secrets.VAULT_GITEA_USER }}
-        HC_VAULT_PASSWORD: ${{ secrets.VAULT_GITEA_PASSWORD }}
-        HC_VAULT_SECRETS_PATH: benedikta-docker/env
+        HC_VAULT_AUTH: token
+        HC_VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
+        HC_VAULT_SECRETS_PATH: rinoa-docker/env
 
     - name: Find docker-compose YAML files
       id: find-compose-files
