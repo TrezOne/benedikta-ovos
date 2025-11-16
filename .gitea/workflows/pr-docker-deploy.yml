@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 1
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -40,7 +40,7 @@ jobs:
           assignee: ${{ github.actor }}
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -62,7 +62,7 @@ jobs:
           git fetch origin ${{ github.event.pull_request.base.ref }}
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -190,7 +190,7 @@ jobs:
           password: ${{ secrets.BOT_GITEA_PASSWORD }}
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -237,7 +237,7 @@ jobs:
           summary: true
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -277,7 +277,7 @@ jobs:
           echo "pr_index=${pr_index}" >> $GITHUB_OUTPUT
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -325,7 +325,7 @@ jobs:
           password: ${{ secrets.BOT_GITEA_PASSWORD }}
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
@@ -355,7 +355,7 @@ jobs:
           summary: true
 
       - name: Gotify Notification
-        uses: eikendev/gotify-action@master
+        uses: eikendev/gotify-action@0.0.3
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
