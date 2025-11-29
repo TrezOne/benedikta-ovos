@@ -71,5 +71,3 @@ services:
 volumes:
   beszel-agent-data:
     name: beszel-agent-data
-  ollama:
-    name: ollama
