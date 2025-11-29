@@ -1,0 +1,75 @@
+name: ovosmisc
+
+services:
+  beszel-agent:
+    container_name: beszel-agent
+    environment:
+      LISTEN: 45876
+      KEY: "${BESZEL_RIKKU_AGENT_KEY}"
+      TOKEN: ${BESZEL_BENEDIKTA_TOKEN}
+      HUB_URL: http://192.168.1.254:22220
+    expose:
+      - 45876
+    image: henrygd/beszel-agent:latest@sha256:dee59d68ac327a755aec7651dd31b9f9a6d7db3da6f093e16e8c36c1f71a18cd
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - beszel-agent-data:/var/lib/beszel-agent
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/mmcblk0:/extra-filesystems/dev/mmcblk0:ro
+  docker-socket-proxy:
+    container_name: dockerproxy
+    environment:
+      AUTH: 0
+      BUILD: 0
+      COMMIT: 0
+      CONFIGS: 0
+      CONTAINERS: 1
+      DISTRIBUTION: 0
+      EVENTS: 0
+      EXEC: 0
+      GPRC: 0
+      IMAGES: 1
+      INFO: 1
+      NETWORKS: 1
+      NODES: 0
+      POST: 0
+      PLUGINS: 0
+      SERVICES: 0
+      SESSION: 0
+      SYSTEM: 0
+      TASKS: 0
+      VOLUMES: 0
+      LOG_LEVEL: debug
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest@sha256:3400c429c5f9e1b21d62130fb93b16e2e772d4fb7695bd52fc2b743800b9fe9e
+    ports:
+      - 2375:2375
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  portainer-agent:
+    container_name: portainer_agent
+    image: portainer/agent:latest@sha256:d2e5f753e8c668f7a7916621e64d6535f212b0f6ade5389a6fcc1f6830405ccf
+    volumes:
+      - /:/host
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    ports:
+      - 9001:9001
+  signoz-logspout:
+    command: signoz://192.168.1.254:8082
+    container_name: signoz-logspout
+    environment:
+      ENV: prod
+      SIGNOZ_LOG_ENDPOINT: http://192.168.1.254:8082
+    image: pavanputhra/logspout-signoz@sha256:6da8ce12279a5262de8b2d5c083ce82d4c878c4eab702b4d328afe147ed7553b
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  beszel-agent-data:
+    name: beszel-agent-data
+  ollama:
+    name: ollama
