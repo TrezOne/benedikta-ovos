@@ -52,7 +52,7 @@ services:
     container_name: hivemind_cli
     hostname: hivemind_cli
     restart: unless-stopped
-    image: docker.io/smartgic/hivemind-cli:alpha
+    image: docker.io/smartgic/hivemind-cli:alpha@sha256:896cb56b9c5b1a4eaeba0cb7c53ae173a4b0f777163cbd2573e2b183cbf41ceb
     pull_policy: always
     tty: true
     environment:
@@ -67,7 +67,7 @@ services:
     container_name: hivemind_satellite
     hostname: hivemind_satellite
     restart: unless-stopped
-    image: smartgic/hivemind-satellite:alpha
+    image: smartgic/hivemind-satellite:alpha@sha256:3057968a493fab9dcca9e1274757bd7fe61d9b143ae2900939e1ec5bbc96664a
     pull_policy: always
     environment:
       PULSE_SERVER: unix:${XDG_RUNTIME_DIR}/pulse/native
