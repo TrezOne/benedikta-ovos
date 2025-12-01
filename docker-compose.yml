@@ -5,7 +5,7 @@ services:
     container_name: beszel-agent
     environment:
       LISTEN: 45876
-      KEY: "${BESZEL_RIKKU_AGENT_KEY}"
+      KEY: "${BESZEL_BENEDIKTA_AGENT_KEY}"
       TOKEN: ${BESZEL_BENEDIKTA_TOKEN}
       HUB_URL: http://192.168.1.254:22220
     expose:
@@ -52,7 +52,7 @@ services:
     container_name: hivemind_cli
     hostname: hivemind_cli
     restart: unless-stopped
-    image: docker.io/smartgic/hivemind-cli:${VERSION}
+    image: docker.io/smartgic/hivemind-cli:alpha
     pull_policy: always
     tty: true
     environment:
@@ -67,7 +67,7 @@ services:
     container_name: hivemind_satellite
     hostname: hivemind_satellite
     restart: unless-stopped
-    image: smartgic/hivemind-satellite:${VERSION}
+    image: smartgic/hivemind-satellite:alpha
     pull_policy: always
     environment:
       PULSE_SERVER: unix:${XDG_RUNTIME_DIR}/pulse/native
