@@ -20,7 +20,7 @@ services:
   docker-socket-proxy:
     container_name: dockerproxy
     environment:
-      AUTH: 0
+      AUTH: 1
       BUILD: 0
       COMMIT: 0
       CONFIGS: 0
