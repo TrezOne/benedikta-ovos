@@ -5,7 +5,7 @@ services:
     container_name: beszel-agent
     environment:
       LISTEN: 45876
-      KEY: "${BESZEL_RIKKU_AGENT_KEY}"
+      KEY: "${BESZEL_BENEDIKTA_AGENT_KEY}"
       TOKEN: ${BESZEL_BENEDIKTA_TOKEN}
       HUB_URL: http://192.168.1.254:22220
     expose:
@@ -48,6 +48,46 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  hivemind_cli:
+    container_name: hivemind_cli
+    hostname: hivemind_cli
+    restart: unless-stopped
+    image: docker.io/smartgic/hivemind-cli:alpha
+    pull_policy: always
+    tty: true
+    environment:
+      TZ: ${TZ}
+    network_mode: host
+    volumes:
+      - ${BENEDIKTA_DOCKER_DIR}/hivemind/config:/home/${HIVEMIND_USER}/.config/hivemind:z
+      - ${BENEDIKTA_DOCKER_DIR}/hivemind/share:/home/${HIVEMIND_USER}/.local/share/hivemind:z
+    depends_on:
+      - hivemind_satellite
+  hivemind_satellite:
+    container_name: hivemind_satellite
+    hostname: hivemind_satellite
+    restart: unless-stopped
+    image: smartgic/hivemind-satellite:alpha
+    pull_policy: always
+    environment:
+      PULSE_SERVER: unix:${XDG_RUNTIME_DIR}/pulse/native
+      PULSE_COOKIE: /home/${HIVEMIND_USER}/.config/pulse/cookie
+      TZ: ${TZ}
+      VOICE_SAT_KEY: ${HV_VOICE_SAT_KEY}
+      VOICE_SAT_PASSWORD: ${HV_VOICE_SAT_PASSWORD}
+      VOICE_SAT_HOST: 192.168.1.248
+      VOICE_SAT_PORT: 5678
+      XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR
+    devices:
+      - /dev/snd
+    volumes:
+      - ~/.config/pulse/cookie:/home/${HIVEMIND_USER}/.config/pulse/cookie:ro
+      - ${BENEDIKTA_DOCKER_DIR}/hivemind:/home/${HIVEMIND_USER}/.config/mycroft:ro
+      - hv_ovos_tts_cache:/home/${HIVEMIND_USER}/.cache/mycroft
+      - hv_ovos_listener_records:/home/${HIVEMIND_USER}/.local/share/mycroft/listener
+      - hv_ovos_models:/home/${HIVEMIND_USER}/.local/share/precise-lite
+      - ${XDG_RUNTIME_DIR}/pipewire-0:${XDG_RUNTIME_DIR}/pipewire-0:ro
+      - ${XDG_RUNTIME_DIR}/pulse:${XDG_RUNTIME_DIR}/pulse:ro
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:d2e5f753e8c668f7a7916621e64d6535f212b0f6ade5389a6fcc1f6830405ccf
@@ -71,3 +111,12 @@ services:
 volumes:
   beszel-agent-data:
     name: beszel-agent-data
+  hv_ovos_models:
+    name: hv_ovos_models
+    driver: local
+  hv_ovos_listener_records:
+    name: hv_ovos_listener_records
+    driver: local
+  hv_ovos_tts_cache:
+    name: hv_ovos_tts_cache
+    driver: local
