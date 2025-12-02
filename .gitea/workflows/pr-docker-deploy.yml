@@ -212,14 +212,14 @@ jobs:
           HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
           HC_VAULT_AUTH: token
           HC_VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
-          HC_VAULT_SECRETS_PATH: rinoa-docker/env
+          HC_VAULT_SECRETS_PATH: benedikta-docker/env
 
       - name: Docker Compose Dry Run
         uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
-          name: "ovosmisc"
+          name: "benedikta"
           host: 192.168.1.250
           user: ovos
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
@@ -336,14 +336,14 @@ jobs:
           HC_VAULT_ADDR: ${{ secrets.TREZ_VAULT_ADDR }}
           HC_VAULT_AUTH: token
           HC_VAULT_TOKEN: ${{ secrets.VAULT_GITEA_TOKEN }}
-          HC_VAULT_SECRETS_PATH: rinoa-docker/env
+          HC_VAULT_SECRETS_PATH: benedikta-docker/env
 
       - name: Docker Compose Deployment
         uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
         with:
           mode: compose
           file: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}
-          name: "ovosmisc"
+          name: "benedikta"
           host: 192.168.1.250
           user: ovos
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
