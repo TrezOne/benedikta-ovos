@@ -76,7 +76,7 @@ services:
       VOICE_SAT_KEY: ${HV_VOICE_SAT_KEY}
       VOICE_SAT_PASSWORD: ${HV_VOICE_SAT_PASSWORD}
       VOICE_SAT_HOST: 192.168.1.248
-      VOICE_SAT_PORT: 5678
+      VOICE_SAT_PORT: 5679
       XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR
     devices:
       - /dev/snd
