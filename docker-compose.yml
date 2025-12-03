@@ -67,7 +67,7 @@ services:
       PULSE_SERVER: unix:${XDG_RUNTIME_DIR}/pulse/native
     volumes:
       - ~/.config/pulse/cookie:/home/${HIVEMIND_USER}/.config/pulse/cookie:ro
-      - ${BENEDIKTA_DOCKER_DIR}/hivemind:/home/${HIVEMIND_USER}/.config/hivemind:ro
+      - ${BENEDIKTA_DOCKER_DIR}/hivemind:/home/${HIVEMIND_USER}/.config/hivemind
       - hv_ovos_tts_cache:/home/${HIVEMIND_USER}/.cache/mycroft
       - hv_ovos_listener_records:/home/${HIVEMIND_USER}/.local/share/mycroft/listener
       - hv_ovos_models:/home/${HIVEMIND_USER}/.local/share/precise-lite
