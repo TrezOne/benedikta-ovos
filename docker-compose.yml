@@ -52,7 +52,7 @@ services:
     container_name: hivemind_satellite
     hostname: hivemind_satellite
     restart: unless-stopped
-    image: smartgic/hivemind-satellite:alpha
+    image: smartgic/hivemind-satellite:alpha@sha256:3057968a493fab9dcca9e1274757bd7fe61d9b143ae2900939e1ec5bbc96664a
     pull_policy: always
     network_mode: host
     devices:
