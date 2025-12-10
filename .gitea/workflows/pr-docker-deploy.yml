@@ -6,7 +6,7 @@ on:
     branches-ignore:
       - "main"
     paths:
-      - "**/docker-compose*.yml"
+      - "**/docker-compose.yml"
 
 env:
   HC_VAULT_VERSION: "1.21.1"
