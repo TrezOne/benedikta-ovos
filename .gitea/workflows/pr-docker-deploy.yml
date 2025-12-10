@@ -193,9 +193,6 @@ jobs:
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
           args: --remove-orphans --dry-run ${{ needs.generate-service-list.outputs.svc_deploy_list }}
           env_file: ".env"
-          registry_host: "docker.io"
-          registry_user: ${{ secrets.DOCKERHUB_USER }}
-          registry_pass: ${{ secrets.DOCKERHUB_PASSWORD }}
           summary: true
 
       - name: Gotify Notification
