@@ -87,12 +87,3 @@ services:
 volumes:
   beszel-agent-data:
     name: beszel-agent-data
-  hv_ovos_models:
-    name: hv_ovos_models
-    driver: local
-  hv_ovos_listener_records:
-    name: hv_ovos_listener_records
-    driver: local
-  hv_ovos_tts_cache:
-    name: hv_ovos_tts_cache
-    driver: local
