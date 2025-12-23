@@ -69,7 +69,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   wyoming-satellite:
-    command: "--name benedikta --mic-command 'arecord -D plughw:CARD=sndrpigooglevoi,DEV=0 -r 16000 -c 1 -f S16_LE -t raw' --snd-command 'aplay -D plughw:CARD=sndrpigooglevoi,DEV=0 -r 22050 -c 1 -f S16_LE -t raw' --wake-uri 'tcp://wyoming-openwakeword:10400' --wake-word-name 'ok_nabu' -- --debug"
+    command: "--name benedikta --mic-command 'arecord -D plughw:CARD=sndrpigooglevoi,DEV=0 -r 16000 -c 1 -f S16_LE -t raw' --snd-command 'aplay -D plughw:CARD=sndrpigooglevoi,DEV=0 -r 22050 -c 1 -f S16_LE -t raw' --wake-uri 'tcp://wyoming-openwakeword:10400' --wake-word-name 'ok_nabu' --debug"
     container_name: wyoming-satellite
     devices:
       - /dev/snd
