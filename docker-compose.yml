@@ -48,47 +48,6 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-  hivemind_satellite:
-    container_name: hivemind_satellite
-    hostname: hivemind_satellite
-    restart: unless-stopped
-    image: smartgic/hivemind-satellite:alpha@sha256:3057968a493fab9dcca9e1274757bd7fe61d9b143ae2900939e1ec5bbc96664a
-    pull_policy: always
-    network_mode: host
-    devices:
-      - /dev/snd
-    environment:
-      TZ: ${TZ}
-      VOICE_SAT_HOST: 192.168.1.248
-      VOICE_SAT_PORT: ${VOICE_SAT_PORT:-5678}
-      VOICE_SAT_KEY: ${HV_VOICE_SAT_KEY}
-      VOICE_SAT_PASSWORD: ${HV_VOICE_SAT_PASSWORD}
-      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR}
-      PULSE_SERVER: unix:${XDG_RUNTIME_DIR}/pulse/native
-    volumes:
-      - ~/.config/pulse/cookie:/home/${HIVEMIND_USER}/.config/pulse/cookie:ro
-      - ${BENEDIKTA_DOCKER_DIR}/hivemind:/home/${HIVEMIND_USER}/.config/hivemind
-      - ${BENEDIKTA_DOCKER_DIR}/mycroft:/home/${HIVEMIND_USER}/.config/mycroft
-      - hv_ovos_tts_cache:/home/${HIVEMIND_USER}/.cache/mycroft
-      - hv_ovos_listener_records:/home/${HIVEMIND_USER}/.local/share/mycroft/listener
-      - hv_ovos_models:/home/${HIVEMIND_USER}/.local/share/precise-lite
-      - ${XDG_RUNTIME_DIR}/pipewire-0:${XDG_RUNTIME_DIR}/pipewire-0:ro
-      - ${XDG_RUNTIME_DIR}/pulse:${XDG_RUNTIME_DIR}/pulse:ro
-  hivemind_cli:
-    container_name: hivemind_cli
-    hostname: hivemind_cli
-    restart: unless-stopped
-    image: docker.io/smartgic/hivemind-cli:alpha@sha256:896cb56b9c5b1a4eaeba0cb7c53ae173a4b0f777163cbd2573e2b183cbf41ceb
-    pull_policy: always
-    tty: true
-    network_mode: host
-    environment:
-      TZ: ${TZ}
-    volumes:
-      - ${BENEDIKTA_DOCKER_DIR}/hivemind/config:/home/${HIVEMIND_USER}/.config/hivemind:z
-      - ${BENEDIKTA_DOCKER_DIR}/hivemind/share:/home/${HIVEMIND_USER}/.local/share/hivemind:z
-    depends_on:
-      - hivemind_satellite
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:5b33e50ff131094e0b1b7272cc34205c970b6b25cecf4bbcf7c13298388a4832
