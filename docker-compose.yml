@@ -5,7 +5,7 @@ services:
     container_name: beszel-agent
     environment:
       LISTEN: 45876
-      KEY: "${BESZEL_BENEDIKTA_AGENT_KEY}"
+      KEY: ${BESZEL_BENEDIKTA_AGENT_KEY}
       TOKEN: ${BESZEL_BENEDIKTA_TOKEN}
       HUB_URL: http://192.168.1.254:22220
     expose:
@@ -68,6 +68,13 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  wyoming-satellite:
+    command: "--name benedikta --mic-command 'arecord -D plughw:CARD=sndrpigooglevoi,DEV=0 -r 22050 -c 1 -f S16_LE' --snd-command 'aplay -D plughw:CARD=sndrpigooglevoi,DEV=0 -r 22050 -c 1 -f S16_LE' --wake-uri 'tcp://192.168.1.248:10400' --wake-word-name 'ok_nabu' --debug"
+    container_name: wyoming-satellite
+    image: git.trez.wtf/trez/wyoming-satellite
+    ports:
+      - 10700:10700
+    restart: unless-stopped
 volumes:
   beszel-agent-data:
     name: beszel-agent-data

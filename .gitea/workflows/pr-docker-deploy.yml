@@ -6,7 +6,7 @@ on:
     branches-ignore:
       - "main"
     paths:
-      - "**/docker-compose*.yml"
+      - "**/docker-compose.yml"
 
 env:
   HC_VAULT_VERSION: "1.21.1"
@@ -69,64 +69,32 @@ jobs:
           notification_title: "GITEA: Services TBD"
           notification_message: "Generating list of services to deploy..."
 
+      - name: Save both versions of docker-compose.yml
+        run: |
+          git show origin/main:docker-compose.yml > docker-compose-main.yml || touch docker-compose-main.yml
+          cp docker-compose.yml docker-compose-head.yml
+
       - name: Detect added, deleted, and modified services
         id: detect_services
         run: |
           echo "Getting services from main and ${{ github.ref_name }}"
-
-          # Dynamically find all docker-compose YAML files (root + compose folder)
-          COMPOSE_FILES=($(find . -maxdepth 2 -type f -name 'docker-compose*.yml' | sort))
-
-          echo "Found Compose files:"
-          printf '%s\n' "${COMPOSE_FILES[@]}"
-
-          # Temp files to store all services
-          touch services_main_all.txt services_head_all.txt
-
-          for f in "${COMPOSE_FILES[@]}"; do
-            echo "Processing $f"
-
-            # Create a safe filename by replacing slashes with underscores
-            safe_f=$(echo "$f" | sed 's|[./]|_|g')
-
-            # Fetch main version
-            git show origin/main:"$f" > "main_${safe_f}" 2>/dev/null || touch "main_${safe_f}"
-            cp "$f" "head_${safe_f}"
-
-            # Extract services and append to global list
-            yq '.services | keys | .[]' "main_${safe_f}" >> services_main_all.txt 2>/dev/null || true
-            yq '.services | keys | .[]' "head_${safe_f}" >> services_head_all.txt 2>/dev/null || true
-          done
-
-          # Sort and deduplicate
-          sort -u services_main_all.txt -o services_main_all.txt
-          sort -u services_head_all.txt -o services_head_all.txt
+          yq '.services | keys | .[]' docker-compose-main.yml | sort > services_main.txt
+          yq '.services | keys | .[]' docker-compose-head.yml | sort > services_head.txt
 
           echo "Creating list of modified services..."
           touch service_changes.txt
 
-          # Added services
-          comm -13 services_main_all.txt services_head_all.txt | while read service; do
+          comm -13 services_main.txt services_head.txt | while read service; do
             echo "$service: added" >> service_changes.txt
           done
 
-          # Modified services (parallelized)
-          comm -12 services_main_all.txt services_head_all.txt | xargs -n1 -P4 -I{} bash -c '
-            service="{}"
-            modified=0
-            for f in "${COMPOSE_FILES[@]}"; do
-              safe_f=$(echo "$f" | sed "s|[./]|_|g")
-              yq ".services[\"$service\"]" "main_${safe_f}" > tmp_main.yml 2>/dev/null || continue
-              yq ".services[\"$service\"]" "head_${safe_f}" > tmp_head.yml 2>/dev/null || continue
-              if ! diff -q tmp_main.yml tmp_head.yml > /dev/null; then
-                modified=1
-                break
-              fi
-            done
-            if [[ $modified -eq 1 ]]; then
+          comm -12 services_main.txt services_head.txt | while read service; do
+            yq ".services[\"$service\"]" docker-compose-main.yml > tmp_main.yml
+            yq ".services[\"$service\"]" docker-compose-head.yml > tmp_head.yml
+            if ! diff -q tmp_main.yml tmp_head.yml > /dev/null; then
               echo "$service: modified" >> service_changes.txt
             fi
-          '
+          done
 
           echo "Detected service changes:"
           cat service_changes.txt
@@ -225,9 +193,6 @@ jobs:
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
           args: --remove-orphans --dry-run ${{ needs.generate-service-list.outputs.svc_deploy_list }}
           env_file: ".env"
-          registry_host: "docker.io"
-          registry_user: ${{ secrets.DOCKERHUB_USER }}
-          registry_pass: ${{ secrets.DOCKERHUB_PASSWORD }}
           summary: true
 
       - name: Gotify Notification
