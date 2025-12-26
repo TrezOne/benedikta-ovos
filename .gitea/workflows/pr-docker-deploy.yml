@@ -183,7 +183,7 @@ jobs:
           HC_VAULT_SECRETS_PATH: benedikta-docker/env
 
       - name: Docker Compose Dry Run
-        uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
+        uses: cssnr/stack-deploy-action@28c3c6f42b225af7100652b459621c0c966fd901 # v1.5.0
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
@@ -304,7 +304,7 @@ jobs:
           HC_VAULT_SECRETS_PATH: benedikta-docker/env
 
       - name: Docker Compose Deployment
-        uses: cssnr/stack-deploy-action@d58b92bcd776afc57ef12f55bafff71200fd218e # v1.4.0
+        uses: cssnr/stack-deploy-action@28c3c6f42b225af7100652b459621c0c966fd901 # v1.5.0
         with:
           mode: compose
           file: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}
