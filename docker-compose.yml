@@ -73,14 +73,14 @@ services:
     container_name: wyoming-satellite
     devices:
       - /dev/snd
-    image: sker65/wyoming-satellite
+    image: sker65/wyoming-satellite@sha256:581e592794db847aee730e7c8cbf23217e9f779724f9f8b004072ddc4f3a701d
     ports:
       - 10700:10700
     restart: unless-stopped
   wyoming-openwakeword:
     command: "--preload-model ok_nabu --debug"
     container_name: wyoming-openwakeword
-    image: rhasspy/wyoming-openwakeword
+    image: rhasspy/wyoming-openwakeword@sha256:52cb1168731a1849fc28cf339c935fde58746bbabc94226668a40ef6ddf5d42b
     ports:
       - 10400:10400
     restart: unless-stopped
