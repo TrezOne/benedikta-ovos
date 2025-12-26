@@ -116,9 +116,9 @@ jobs:
         with:
           mode: compose
           file: ${{ steps.compose_file_list.outputs.compose_list }}
-          name: "ovosmisc"
+          name: "benedikta"
           host: 192.168.1.250
-          user: ovos
+          user: charish
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
           args: --remove-orphans ${{ steps.services.outputs.docker_svc_list }}
           env_file: ".env"

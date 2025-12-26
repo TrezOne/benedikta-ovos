@@ -189,7 +189,7 @@ jobs:
           file: ${{ steps.compose_file_list.outputs.compose_list }}
           name: "benedikta"
           host: 192.168.1.250
-          user: ovos
+          user: charish
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
           args: --remove-orphans --dry-run ${{ needs.generate-service-list.outputs.svc_deploy_list }}
           env_file: ".env"
@@ -310,7 +310,7 @@ jobs:
           file: ${{ needs.docker-compose-dry-run.outputs.compose_file_list }}
           name: "benedikta"
           host: 192.168.1.250
-          user: ovos
+          user: charish
           ssh_key: ${{ secrets.RUNNER_SSH_PRIVATE_KEY }}
           args: --remove-orphans ${{ needs.generate-service-list.outputs.svc_deploy_list }}
           env_file: ".env"
