@@ -64,7 +64,7 @@ services:
           RUN apt-get update && \
               apt-get install --yes --no-install-recommends \
               avahi-utils alsa-utils libportaudio2 portaudio19-dev \
-              build-essential libmpv-dev pulseaudio
+              build-essential libmpv-dev pipewire
 
           WORKDIR /srv
           COPY . ./
