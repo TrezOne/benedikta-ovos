@@ -48,6 +48,49 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  linux-voice-assistant:
+    container_name: linux-voice-assistant
+    pull_policy: build
+    build:
+      context: https://github.com/OHF-Voice/linux-voice-assistant.git#main
+      network: host
+      dockerfile_inline: |
+        ###### syntax=docker/dockerfile:1
+          FROM python:3.13-slim-trixie
+
+          ENV LANG=C.UTF-8
+          ENV DEBIAN_FRONTEND=noninteractive
+
+          RUN apt-get update && \
+              apt-get install --yes --no-install-recommends \
+              avahi-utils alsa-utils libportaudio2 portaudio19-dev \
+              build-essential libmpv-dev pulseaudio
+
+          WORKDIR /srv
+          COPY . ./
+          RUN ./script/setup
+
+          ENTRYPOINT ["./script/run"]
+    image: ohf-voice/linux-voice-assistant:latest
+    restart: always
+    ports:
+      - "6053:6053"
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - /run/user/$(id -u)/pipewire-0:/run/user/$(id -u)/pipewire-0
+    environment:
+      PULSE_SERVER: /run/user/$(id -u)
+    group_add:
+      - audio
+    command:
+      - "--name"
+      - "benedikta"
+      - "--list-input-devices"
+      # - "--audio-input-device"
+      # - "pulse"
+      # - "--audio-output-device"
+      # - "pulse/<your-pulse-sink-here>"
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:5b33e50ff131094e0b1b7272cc34205c970b6b25cecf4bbcf7c13298388a4832
