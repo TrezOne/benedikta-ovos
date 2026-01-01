@@ -87,10 +87,6 @@ services:
       - "--name"
       - "benedikta"
       - "--list-input-devices"
-      # - "--audio-input-device"
-      # - "pulse"
-      # - "--audio-output-device"
-      # - "pulse/<your-pulse-sink-here>"
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:5b33e50ff131094e0b1b7272cc34205c970b6b25cecf4bbcf7c13298388a4832
