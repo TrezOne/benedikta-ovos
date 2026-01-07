@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  HC_VAULT_VERSION: "1.21.1"
+  HC_VAULT_VERSION: "1.21.2"
 
 jobs:
   readme-services:
