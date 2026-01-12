@@ -10,7 +10,7 @@ services:
       HUB_URL: http://192.168.1.254:22220
     expose:
       - 45876
-    image: henrygd/beszel-agent:latest@sha256:8ccc68032c475d969eb3b37d7e4c2c392a194a6f2a82f807c332226e1493c5a6
+    image: henrygd/beszel-agent:latest@sha256:488f403b59ace6d655d7203dbfcde992aa865f1dd1d2f6017671a114896f4486
     network_mode: host
     restart: unless-stopped
     volumes:
