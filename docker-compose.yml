@@ -133,9 +133,9 @@ services:
       - SYS_NICE
     volumes:
       # Wakeword data and configuration
-      - wakeword_data:/app/local
-      - wakeword_custom:/app/wakewords/custom
-      - configuration:/app/configuration
+      - lva_wakeword_data:/app/local
+      - lva_wakeword_custom:/app/wakewords/custom
+      - lva_configuration:/app/configuration
       - ${BENEDIKTA_DOCKER_DIR}/linux-voice-assistant/sounds/custom:/app/sounds/custom
       # Time and zone
       - /etc/localtime:/etc/localtime:ro
