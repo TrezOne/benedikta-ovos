@@ -13,8 +13,8 @@ x-lva-env: &lva-env
 
     ### User ID:
     # This is used to set the correct permissions for the accessing the audio device and accessing the PulseAudio socket
-    LVA_USER_ID: ${PUID}
-    LVA_USER_GROUP: ${PGID}
+    LVA_USER_ID: 1000
+    LVA_USER_GROUP: 1000
 
     ### Name for the client (optional):
     CLIENT_NAME: "benedikta"
@@ -24,8 +24,8 @@ x-lva-env: &lva-env
     # Pipewire Server:      /run/user/1000/pulse/native
     LVA_PULSE_SERVER: "unix:/run/user/${LVA_USER_ID}/pulse/native"
     LVA_XDG_RUNTIME_DIR: "/run/user/${LVA_USER_ID}"
-    PULSE_SERVER: ${LVA_PULSE_SERVER}
-    XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
+    PULSE_SERVER: "unix:/run/user/${LVA_USER_ID}/pulse/native"
+    XDG_RUNTIME_DIR: "/run/user/${LVA_USER_ID}"
 
     ### Path to the preferences file (optional):
     # PREFERENCES_FILE="/app/configuration/preferences.json"
