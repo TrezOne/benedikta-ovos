@@ -118,7 +118,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
   linux-voice-assistant:
     container_name: linux-voice-assistant
-    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest"
+    image: ghcr.io/ohf-voice/linux-voice-assistant:1.1.5
     restart: unless-stopped
     network_mode: "host"
     user: "${LVA_USER_ID}:${LVA_USER_GROUP}"
