@@ -22,10 +22,10 @@ x-lva-env: &lva-env
     ### PulseAudio socket path on the host:
     # PulseAudio Server:    /run/user/1000/pulse
     # Pipewire Server:      /run/user/1000/pulse/native
-    LVA_PULSE_SERVER: "unix:/run/user/${LVA_USER_ID}/pulse/native"
-    LVA_XDG_RUNTIME_DIR: "/run/user/${LVA_USER_ID}"
-    PULSE_SERVER: "unix:/run/user/${LVA_USER_ID}/pulse/native"
-    XDG_RUNTIME_DIR: "/run/user/${LVA_USER_ID}"
+    LVA_PULSE_SERVER: unix:/run/user/1000/pulse/native
+    LVA_XDG_RUNTIME_DIR: /run/user/1000
+    PULSE_SERVER: unix:/run/user/1000/pulse/native
+    XDG_RUNTIME_DIR: "/run/user/1000"
 
     ### Path to the preferences file (optional):
     # PREFERENCES_FILE="/app/configuration/preferences.json"
