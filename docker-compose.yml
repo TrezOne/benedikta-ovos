@@ -1,5 +1,73 @@
 name: benedikta
+x-lva-env: &lva-env
+  environment:
+    # Linux-Voice-Assistant - Docker Environment Configuration
+    # Copy this file to .env and customize for your setup by 'cp .env.example .env'
 
+    ### Enable debug mode (optional):
+    ENABLE_DEBUG: "1"
+
+    ### List audio devices (optional):
+    # if enabled normal startup is disabled
+    # LIST_DEVICES="1"
+
+    ### User ID:
+    # This is used to set the correct permissions for the accessing the audio device and accessing the PulseAudio socket
+    LVA_USER_ID: ${PUID}
+    LVA_USER_GROUP: ${PGID}
+
+    ### Name for the client (optional):
+    CLIENT_NAME: "benedikta"
+
+    ### PulseAudio socket path on the host:
+    # PulseAudio Server:    /run/user/1000/pulse
+    # Pipewire Server:      /run/user/1000/pulse/native
+    LVA_PULSE_SERVER: "unix:/run/user/${LVA_USER_ID}/pulse/native"
+    LVA_XDG_RUNTIME_DIR: "/run/user/${LVA_USER_ID}"
+    PULSE_SERVER: ${LVA_PULSE_SERVER}
+    XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
+
+    ### Path to the preferences file (optional):
+    # PREFERENCES_FILE="/app/configuration/preferences.json"
+
+    ### Network interface (optional):
+    # NETWORK_INTERFACE="eth0"
+
+    ### IP-Address for the api (optional):
+    # HOST="0.0.0.0"
+
+    ### Port for the api (optional):
+    # PORT="6053"
+
+    ### Audio input device (optional):
+    # AUDIO_INPUT_DEVICE="default"
+
+    ### Audio output device (optional):
+    # AUDIO_OUTPUT_DEVICE="default"
+
+    ### Enable thinking sound (optional):
+    ENABLE_THINKING_SOUND: "1"
+
+    ### Wake word directory (optional):
+    # path for custom files in docker is for example "app/wakewords/custom"
+    # WAKE_WORD_DIR="app/wakewords"
+
+    ### Wake model (optional):
+    WAKE_MODEL: "hey_luna"
+
+    ### Stop model (optional):
+    # STOP_MODEL="stop"
+
+    ### Refactory seconds (optional):
+    # REFACTORY_SECONDS="2"
+
+    ### Sound files (optional):
+    # path for custom files in docker is for example "sounds/custom/your_soundfile.flac"
+    # WAKEUP_SOUND="sounds/wake_word_triggered.flac"
+    # TIMER_FINISHED_SOUND="sounds/timer_finished.flac"
+    # PROCESSING_SOUND="sounds/processing.wav"
+    # MUTE_SOUND="sounds/mute_switch_on.flac"
+    # UNMUTE_SOUND="sounds/mute_switch_off.flac"
 services:
   beszel-agent:
     container_name: beszel-agent
@@ -48,6 +116,57 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  linux-voice-assistant:
+    container_name: linux-voice-assistant
+    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest"
+    restart: unless-stopped
+    network_mode: "host"
+    user: "${LVA_USER_ID}:${LVA_USER_GROUP}"
+    environment:
+      # Pulseaudio
+      XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
+      PULSE_SERVER: ${LVA_PULSE_SERVER}
+    group_add:
+      - audio
+    # Priority for audio process
+    cap_add:
+      - SYS_NICE
+    volumes:
+      # Wakeword data and configuration
+      - wakeword_data:/app/local
+      - wakeword_custom:/app/wakewords/custom
+      - configuration:/app/configuration
+      - ${BENEDIKTA_DOCKER_DIR}/linux-voice-assistant/sounds/custom:/app/sounds/custom
+      # Time and zone
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # Pulseaudio
+      # /run/user/1000:/run/user/1000
+      - ${LVA_XDG_RUNTIME_DIR}:${LVA_XDG_RUNTIME_DIR}
+    depends_on:
+      - lva-fix-permissions
+    # Health check for process
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "linux_voice_assistant"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+  lva-fix-permissions:
+    container_name: lva-fix-permissions
+    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest"
+    entrypoint: []
+    command: "chown -R ${LVA_USER_ID}:${LVA_USER_GROUP} /app/local /app/configuration /app/wakewords/custom /app/sounds/custom"
+    <<: *lva-env
+    group_add:
+      - audio
+    volumes:
+      # Wakeword data and configuration
+      - lva_wakeword_data:/app/local
+      - lva_wakeword_custom:/app/wakewords/custom
+      - lva_configuration:/app/configuration
+      - ${BENEDIKTA_DOCKER_DIR}/linux-voice-assistant/sounds/custom:/app/sounds/custom
+    restart: "no"
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:e3a9bcb1e5862edaca62d6e54f70efc5815dff33e955a30578b174423b19977c
@@ -87,3 +206,9 @@ services:
 volumes:
   beszel-agent-data:
     name: beszel-agent-data
+  lva_wakeword_data:
+    name: lva_wakeword_data
+  lva_wakeword_custom:
+    name: lva_wakeword_custom
+  lva_configuration:
+    name: lva_configuration
