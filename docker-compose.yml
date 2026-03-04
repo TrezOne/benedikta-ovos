@@ -154,7 +154,7 @@ services:
       start_period: 90s
   lva-fix-permissions:
     container_name: lva-fix-permissions
-    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest@sha256:784b38dc2630a6afe993ca783c279c614185c64dc6bb3b01b21a4712a28124aa"
+    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest@sha256:946b4396bf3ad801c7d66a20248f4d409e315356877f50b8b3699d4a815793a9"
     entrypoint: []
     command: "chown -R ${LVA_USER_ID}:${LVA_USER_GROUP} /app/local /app/configuration /app/wakewords/custom /app/sounds/custom"
     <<: *lva-env
