@@ -122,6 +122,8 @@ services:
     restart: unless-stopped
     network_mode: "host"
     user: "${PUID}:${PGID}"
+    group_add:
+      - audio
     environment:
       ENABLE_DEBUG: 1
       ENABLE_THINKING_SOUND: 1
@@ -130,8 +132,6 @@ services:
       PULSE_SERVER: ${LVA_PULSE_SERVER}
       PULSE_COOKIE: /run/user/1000/pulse/cookie
       XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
-    group_add:
-      - audio
     # Priority for audio process
     cap_add:
       - SYS_NICE
