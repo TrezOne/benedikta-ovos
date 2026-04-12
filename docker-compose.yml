@@ -121,11 +121,15 @@ services:
     image: ghcr.io/ohf-voice/linux-voice-assistant:1.1.9@sha256:e85efa2711a3c0f14863c8300df69fc85328418f2fcbf30be1eea610073ba24c
     restart: unless-stopped
     network_mode: "host"
-    user: "${LVA_USER_ID}:${LVA_USER_GROUP}"
+    user: "${PUID}:${PGID}"
     environment:
+      ENABLE_DEBUG: 1
+      ENABLE_THINKING_SOUND: 1
+      WAKE_MODEL: "hey_luna"
       # Pulseaudio
-      XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
       PULSE_SERVER: ${LVA_PULSE_SERVER}
+      PULSE_COOKIE: /run/user/1000/pulse/cookie
+      XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
     group_add:
       - audio
     # Priority for audio process
@@ -136,13 +140,12 @@ services:
       - lva_wakeword_data:/app/local
       - lva_wakeword_custom:/app/wakewords/custom
       - lva_configuration:/app/configuration
-      - ${BENEDIKTA_DOCKER_DIR}/linux-voice-assistant/sounds/custom:/app/sounds/custom
       # Time and zone
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       # Pulseaudio
-      # /run/user/1000:/run/user/1000
       - ${LVA_XDG_RUNTIME_DIR}:${LVA_XDG_RUNTIME_DIR}
+      - ${LVA_PULSE_COOKIE}:/run/user/1000/pulse/cookie
     depends_on:
       - lva-fix-permissions
     # Health check for process
