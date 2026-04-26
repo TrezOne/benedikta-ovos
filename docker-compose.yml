@@ -54,7 +54,6 @@ x-lva-env: &lva-env
 
     ### Wake model (optional):
     WAKE_MODEL: "hey_luna"
-
     ### Stop model (optional):
     # STOP_MODEL="stop"
 
@@ -116,6 +115,22 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  faster-whisper:
+    container_name: faster-whisper
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      WHISPER_MODEL: large
+      LOCAL_ONLY: #optional
+      WHISPER_BEAM: 1 #optional
+      WHISPER_LANG: en #optional
+    image: lscr.io/linuxserver/faster-whisper:latest@sha256:d394ea15c8e874ce9af42699be01e2ce25b74f780e9eb23c3d3ed9f9a61f44ff
+    ports:
+      - "10300:10300"
+    restart: unless-stopped
+    volumes:
+      - ${BENEDIKTA_DOCKER_DIR}/faster-whisper/:/config
   linux-voice-assistant:
     container_name: linux-voice-assistant
     image: ghcr.io/ohf-voice/linux-voice-assistant:1.1.10@sha256:cd04acd204c647da2663704c694f963d6a3c59e2815ddfcd83aa6114d41e36d5
@@ -132,7 +147,7 @@ services:
       PULSE_SERVER: ${LVA_PULSE_SERVER}
       PULSE_COOKIE: /run/user/1000/pulse/cookie
       XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
-    # Priority for audio process
+      # Priority for audio process
       AUDIO_INPUT_DEVICE: alsa_input.platform-soc_107c000000_sound.stereo-fallback
       AUDIO_OUTPUT_DEVICE: pipewire/alsa_output.platform-soc_107c000000_sound.stereo-fallback
     cap_add:
@@ -151,16 +166,18 @@ services:
       - lva-fix-permissions
     # Health check for process
     healthcheck:
-      test: ["CMD", "pgrep", "-f", "linux_voice_assistant"]
+      test: [ "CMD", "pgrep", "-f", "linux_voice_assistant" ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 90s
   lva-fix-permissions:
     container_name: lva-fix-permissions
-    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest@sha256:cd04acd204c647da2663704c694f963d6a3c59e2815ddfcd83aa6114d41e36d5"
+    image: "ghcr.io/ohf-voice/linux-voice-assistant:latest@sha256:cd04acd204c647da2\
+      663704c694f963d6a3c59e2815ddfcd83aa6114d41e36d5"
     entrypoint: []
-    command: "chown -R ${PUID}:${PGID} /app/local /app/configuration /app/wakewords/custom /app/sounds/custom"
+    command: "chown -R ${PUID}:${PGID} /app/local /app/configuration
+      /app/wakewords/custom /app/sounds/custom"
     <<: *lva-env
     group_add:
       - audio
@@ -171,6 +188,25 @@ services:
       - lva_configuration:/app/configuration
       - ${BENEDIKTA_DOCKER_DIR}/linux-voice-assistant/sounds/custom:/app/sounds/custom
     restart: "no"
+  piper:
+    container_name: piper
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      PIPER_VOICE: en_GB-jenny_dioco-medium
+      LOCAL_ONLY: #optional
+      PIPER_LENGTH: 1.0 #optional
+      PIPER_NOISE: 0.667 #optional
+      PIPER_NOISEW: 0.333 #optional
+      PIPER_SPEAKER: 0 #optional
+      NO_STREAMING: #optional
+    image: lscr.io/linuxserver/piper:latest@sha256:acfe7b8141f69d6adb32ef7ff87ff3c4a6b75852adfa5df58c26d4063b3c467f
+    ports:
+      - 10200:10200
+    restart: unless-stopped
+    volumes:
+      - ${BENEDIKTTA_DOCKER_DIR}/piper/:/config
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:7af856876dcb2778108bf6846f3da31b176443db90e3de31fcfdf17e5ab7857e
