@@ -206,7 +206,7 @@ services:
       - 10200:10200
     restart: unless-stopped
     volumes:
-      - ${BENEDIKTTA_DOCKER_DIR}/piper/:/config
+      - ${BENEDIKTA_DOCKER_DIR}/piper/:/config
   portainer-agent:
     container_name: portainer_agent
     image: portainer/agent:latest@sha256:7af856876dcb2778108bf6846f3da31b176443db90e3de31fcfdf17e5ab7857e
