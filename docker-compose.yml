@@ -133,6 +133,8 @@ services:
       PULSE_COOKIE: /run/user/1000/pulse/cookie
       XDG_RUNTIME_DIR: ${LVA_XDG_RUNTIME_DIR}
     # Priority for audio process
+      AUDIO_INPUT_DEVICE: alsa_input.platform-soc_107c000000_sound.stereo-fallback
+      AUDIO_OUTPUT_DEVICE: pipewire/alsa_output.platform-soc_107c000000_sound.stereo-fallback
     cap_add:
       - SYS_NICE
     volumes:
@@ -145,7 +147,6 @@ services:
       - /etc/timezone:/etc/timezone:ro
       # Pulseaudio
       - ${LVA_XDG_RUNTIME_DIR}:${LVA_XDG_RUNTIME_DIR}
-      - ${LVA_PULSE_COOKIE}:/run/user/1000/pulse/cookie
     depends_on:
       - lva-fix-permissions
     # Health check for process
