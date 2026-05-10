@@ -28,7 +28,7 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: PR Check @ Benedikta"
+          notification_title: "GITEA: PR Check @ Lunafreya"
           notification_message: "Checking for existing PR... 🔍"
 
       - name: PR Check/Creation
@@ -44,7 +44,7 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: PR Check @ Benedikta"
+          notification_title: "GITEA: PR Check @ Lunafreya"
           notification_message: "PR Check done 🎟️"
 
   generate-service-list:
@@ -156,7 +156,7 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: Docker Compose Dry Run @ Benedikta"
+          notification_title: "GITEA: Docker Compose Dry Run @ Lunafreya"
           notification_message: "Starting Docker Compose dry run..."
 
       - name: Get list of Compose files
@@ -200,7 +200,7 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: Docker Compose Dry Run @ Benedikta"
+          notification_title: "GITEA: Docker Compose Dry Run @ Lunafreya"
           notification_message: "Docker Compose dry run completed successfully."
 
   pr-merge:
@@ -291,7 +291,7 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: Docker Compose Deployment @ Benedikta"
+          notification_title: "GITEA: Docker Compose Deployment @ Lunafreya"
           notification_message: "Starting Docker Compose run..."
 
       - name: Generate .env from Hashicorp Vault
@@ -321,5 +321,5 @@ jobs:
         with:
           gotify_api_base: "${{ secrets.RUNNER_GOTIFY_URL }}"
           gotify_app_token: "${{ secrets.RUNNER_GOTIFY_TOKEN }}"
-          notification_title: "GITEA: Docker Compose Deployment @ Benedikta"
+          notification_title: "GITEA: Docker Compose Deployment @ Lunafreya"
           notification_message: "Deployment completed successfully."
