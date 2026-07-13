@@ -201,7 +201,7 @@ services:
       PIPER_NOISEW: 0.333 #optional
       PIPER_SPEAKER: 0 #optional
       NO_STREAMING: #optional
-    image: lscr.io/linuxserver/piper:latest@sha256:fa717fb19e17d4ce0529f7b288edff6c48d22cd385cf2e4ecefb928af3e5c627
+    image: lscr.io/linuxserver/piper:latest@sha256:9ba2b05596ba06e41d4ae03103d6ec240b3a01d6183711407eaa4da042ac24df
     ports:
       - 10200:10200
     restart: unless-stopped
