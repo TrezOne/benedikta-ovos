@@ -133,7 +133,7 @@ services:
       - ${BENEDIKTA_DOCKER_DIR}/faster-whisper/:/config
   linux-voice-assistant:
     container_name: linux-voice-assistant
-    image: ghcr.io/ohf-voice/linux-voice-assistant:1.1.13@sha256:0b981fa5911bd69ab879764fc0fe076bbcc8dee1774f7acd61ec28cdfb1daa37
+    image: ghcr.io/ohf-voice/linux-voice-assistant:1.1.14@sha256:d9a239866bcb440a991cb9cd0acb3fd0fedeb68d2b32ea8e83a64a3083bbb4fa
     restart: unless-stopped
     network_mode: "host"
     user: "${PUID}:${PGID}"
