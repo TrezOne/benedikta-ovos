@@ -125,7 +125,7 @@ services:
       LOCAL_ONLY: #optional
       WHISPER_BEAM: 1 #optional
       WHISPER_LANG: en #optional
-    image: lscr.io/linuxserver/faster-whisper:latest@sha256:afd508a010d857c7b0e4e09d637f45e6b807e07d8ff77505bb6706c252eac197
+    image: lscr.io/linuxserver/faster-whisper:latest@sha256:99c53f245100eedabe164d7050fc7d39d15dbb21e6125e2ff925f5e3f2999959
     ports:
       - "10300:10300"
     restart: unless-stopped
